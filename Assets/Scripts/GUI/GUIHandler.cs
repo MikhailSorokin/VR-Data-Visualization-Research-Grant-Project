@@ -106,7 +106,7 @@ public class GUIHandler : MonoBehaviour {
 
     public void HighlightConnectionsbyCoauthor(string inputtedAuthor)
     {
-        //Debug.Log("Calling connections with a parameter author.");
+        Debug.Log("Calling connections with a parameter author.");
         refToSD.GetTopCoauthors(inputtedAuthor);
 
         List<string> uniqueGeneralAuthors = refToSD.GeneralAuthors.Distinct().ToList();
@@ -179,7 +179,7 @@ public class GUIHandler : MonoBehaviour {
 			txt.text = "Authors";
             GUIs[2].transform.FindChild("InputField Category").gameObject.SetActive(true);
             GUIs[2].transform.FindChild("Reset Button").gameObject.SetActive(false);
-            inputField.text = mostRecentInput;
+            inputField.text = "Joost Engelfriet";
 
             if (SearchEnabled && inputField.text != null && inputField.text != "")
             {

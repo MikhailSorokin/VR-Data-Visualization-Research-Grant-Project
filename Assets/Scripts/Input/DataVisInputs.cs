@@ -52,7 +52,6 @@ public class DataVisInputs : MonoBehaviour
     private bool menuOnR = true;
     private bool menuBool = true;
     private bool transitionedInvis;
-    private bool isRotating = false;
     private const string HEX_STRING_WITH_ALPHA = "0x48FF00FF";
     private int times = 0;
 

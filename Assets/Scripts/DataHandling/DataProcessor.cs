@@ -46,7 +46,7 @@ public static class DataProcessor {
 				if (!articleContainerDictionary.ContainsKey (node_title)) {
 					articleContainerDictionary [node_title] = masterNode; //there should always be a unique article
 				} else
-					articleContainerDictionary ["Duplicate: " + node_title] = masterNode;//throw new Exception("There is a duplicate article in this XML. Please get a new XML file! The Article is: " + node_title);
+					articleContainerDictionary ["Duplicate: " + node_title] = masterNode; //throw new Exception("There is a duplicate article in this XML. Please get a new XML file! The Article is: " + node_title);
 
 				//This is for getting individual author information, important for knowing how many articles an article has publichsed within a category
 				foreach (string author in list_node_authors) {
