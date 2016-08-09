@@ -1505,6 +1505,8 @@ public class SplineDecorator : MonoBehaviour
                         if (!coauthorsConnection)
                         {
                             Transform connTrans = Instantiate(connector) as Transform;
+                            connTrans.transform.rotation = GameObject.FindGameObjectWithTag("Menu").transform.localRotation;
+                            print("rotation here: " + connTrans.transform.rotation.ToString());
                             connector.GetComponent<BezierSpline>().source = sourceGO.transform;
                             connector.GetComponent<BezierSpline>().destination = lastValidGO.transform;
                             connTrans.parent = GameObject.FindGameObjectWithTag("Menu").transform;
@@ -1524,7 +1526,6 @@ public class SplineDecorator : MonoBehaviour
 
                             //set end position
                             connSpline.points[3] = menuDest;
-
                             LoadConnectors(connSpline, colorToUse, 8);
                         }
                         //Debug.Log(coauthorCount);
