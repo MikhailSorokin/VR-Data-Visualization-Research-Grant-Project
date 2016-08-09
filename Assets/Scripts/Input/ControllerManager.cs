@@ -54,8 +54,8 @@
         public static event MouseInteractionEventHandler MapTriggerToMouseMoveOrClick;
         public static event MouseInteractionEventHandler MapTriggerToStopMouseMove;
 
-        public static event MouseInteractionEventHandler MapTouchpadStartToKeyPress;
-        public static event MouseInteractionEventHandler MapTouchpadEndToKeyPress;
+        //public static event MouseInteractionEventHandler MapTouchpadStartToKeyPress;
+        //public static event MouseInteractionEventHandler MapTouchpadEndToKeyPress;
         public static event MouseInteractionEventHandler MapTouchpadAxisChangedToMouseWheel;
 
         public static event KeyboardInteractionEventHandler MapTouchpadPressToKeyPress;

@@ -79,10 +79,10 @@ public class GUIHandler : MonoBehaviour {
     /// </summary>
     private void SwitchGUIDisplay()
 	{
-		GUIs [0].GetComponent<Canvas> ().worldCamera = null;
+		/*GUIs [0].GetComponent<Canvas> ().worldCamera = null;
 		GUIs [0].gameObject.SetActive(false);
         GUIs [1].GetComponent<Canvas>().worldCamera = null;
-        GUIs [1].gameObject.SetActive(false);
+        GUIs [1].gameObject.SetActive(false);*/
         GUIs [2].gameObject.SetActive(true);
 		GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("Controller UI Camera").GetComponent<Camera>();
 		//ActiveUI = GUIs [1];

@@ -81,7 +81,6 @@ public class DataVisInputs : MonoBehaviour
 
     void Start()
     {
-
         transitionParameters.oPos1 = ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().oPos1;
         transitionParameters.oPos2 = ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().oPos2;
         transitionParameters.oRot1 = ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().oRot1;
@@ -121,6 +120,7 @@ public class DataVisInputs : MonoBehaviour
 
         bottomGO = GameObject.Find("Bottom");
         masterGUIHandler = (GUIHandler)FindObjectOfType(typeof(GUIHandler));
+        ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().isRotating = true;
     }
 
     void Update()
@@ -143,10 +143,7 @@ public class DataVisInputs : MonoBehaviour
             }
         }
 
-        if (isRotating) {
-            //print("here");
-            ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().UpdateSplinePos();
-        }
+        ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().UpdateSplinePos();
     }
 
     private static Color hexToColor(string hex)
@@ -530,13 +527,6 @@ public class DataVisInputs : MonoBehaviour
                 dataReadParameters.rotators = ControllerManager.refToMainSplineGO.GetComponentsInChildren<SplineDecorator>();
                 if (e.touchpadAxis.normalized.y != 0)
                 {
-                    if (!isRotating && e.touchpadAxis.normalized.y > 0.01f)
-                    {
-                        isRotating = true;
-                        //print(e.touchpadAxis.normalized.y);
-                        ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().isRotating = true;
-                    }
-
                     //Reason we start at 1 is because 0 is the parent gameobject
                     for (int i = 1; i < dataReadParameters.rotators.Length; i++)
                     {
@@ -565,9 +555,6 @@ public class DataVisInputs : MonoBehaviour
 
                         masterGUIHandler.HighlightConnectionsbyCoauthor();
                     }
-                } else {
-                    isRotating = false;
-                    ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().isRotating = false; 
                 }
             }
         }

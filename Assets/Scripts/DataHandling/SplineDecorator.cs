@@ -81,6 +81,7 @@ public class SplineDecorator : MonoBehaviour
     //private LineRenderer lineRenderer;
     //private Material lineRendererMat;
     private Transform cube;
+    private const float CONN_SIZE = 0.04f;
 
     // connector vars
     public Transform connector;
@@ -888,7 +889,7 @@ public class SplineDecorator : MonoBehaviour
                                         if (!propertiesSet)
                                             DataSetStrings.Add(node.Title);
                                         sp.AddInData(node);
-                                        TextMesh[] allTextMeshes = elements[i].GetComponentsInChildren<TextMesh>();
+                                        //TextMesh[] allTextMeshes = elements[i].GetComponentsInChildren<TextMesh>();
                                         //TODO
 
                                         if (elements[i].GetChild(0).GetComponent<TextMesh>())
@@ -897,10 +898,10 @@ public class SplineDecorator : MonoBehaviour
                                             elements[i].GetChild(1).GetComponent<TextMesh>().text = (startDecade).ToString();
                                         }
 
-                                        foreach (TextMesh tm in allTextMeshes)
+                                        /*foreach (TextMesh tm in allTextMeshes)
                                         {
                                             //tm.text = (startDecade).ToString();
-                                        }
+                                        }*/
 
                                     }
                                     else
@@ -1506,7 +1507,7 @@ public class SplineDecorator : MonoBehaviour
                         {
                             Transform connTrans = Instantiate(connector) as Transform;
                             connTrans.transform.rotation = GameObject.FindGameObjectWithTag("Menu").transform.localRotation;
-                            print("rotation here: " + connTrans.transform.rotation.ToString());
+                            //Might need this later. print("rotation here: " + connTrans.transform.rotation.ToString());
                             connector.GetComponent<BezierSpline>().source = sourceGO.transform;
                             connector.GetComponent<BezierSpline>().destination = lastValidGO.transform;
                             connTrans.parent = GameObject.FindGameObjectWithTag("Menu").transform;
@@ -1526,9 +1527,8 @@ public class SplineDecorator : MonoBehaviour
 
                             //set end position
                             connSpline.points[3] = menuDest;
-                            LoadConnectors(connSpline, colorToUse, 8);
+                            LoadConnectors(connSpline, colorToUse, 8, coauthorCount);
                         }
-                        //Debug.Log(coauthorCount);
                     }
                 }
                 coauthorCount = 0;
@@ -1737,7 +1737,7 @@ public class SplineDecorator : MonoBehaviour
                 for (int i = 0; i < connectGuide.Length; i++, p++)
                 {
                     Transform item = splineConn.transform.GetChild(f);
-                    item.gameObject.GetComponentInChildren<Renderer>().material.SetColor("_EmissionColor", Color.red);
+                    //item.gameObject.GetComponentInChildren<Renderer>().material.SetColor("_EmissionColor", Color.red);
                     Vector3 position = splineConn.GetPoint(p * stepSize);
                     item.transform.position = position;
 
@@ -1783,7 +1783,7 @@ public class SplineDecorator : MonoBehaviour
 
                 item.transform.parent = splineConn.transform;
 
-                item.transform.localScale = new Vector3(scaleNumber, 1, 1);
+                item.transform.localScale *= CONN_SIZE * scaleNumber;
             }
         }
     }
