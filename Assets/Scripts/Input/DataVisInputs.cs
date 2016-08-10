@@ -52,6 +52,7 @@ public class DataVisInputs : MonoBehaviour
     private bool menuOnR = true;
     private bool menuBool = true;
     private bool transitionedInvis;
+    private bool doneYet;
     private const string HEX_STRING_WITH_ALPHA = "0x48FF00FF";
     private int times = 0;
 
@@ -119,7 +120,6 @@ public class DataVisInputs : MonoBehaviour
 
         bottomGO = GameObject.Find("Bottom");
         masterGUIHandler = (GUIHandler)FindObjectOfType(typeof(GUIHandler));
-        ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().isRotating = true;
     }
 
     void Update()
@@ -160,8 +160,6 @@ public class DataVisInputs : MonoBehaviour
         }
         return new Color32(r, g, b, a);
     }
-
-    bool doneYet;
 
     void SetUpDoubleControllerGUI()
     {
@@ -355,7 +353,7 @@ public class DataVisInputs : MonoBehaviour
                 }
             }
 
-            masterGUIHandler.HighlightConnectionsbyCoauthor();
+            ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().CallAlgorithm();
             //What I can do is access the positions of the line renderer component on of the sphere and just update those positions with the current GO positions on the sphere.
             //This way, we don't have to call the algorithm every time, which may take more time then needed
 
@@ -390,7 +388,7 @@ public class DataVisInputs : MonoBehaviour
                 }
             }
 
-            masterGUIHandler.HighlightConnectionsbyCoauthor();
+            ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().CallAlgorithm();
             //What I can do is access the positions of the line renderer component on of the sphere and just update those positions with the current GO positions on the sphere.
             //This way, we don't have to call the algorithm every time, which may take more time then needed
 
@@ -488,7 +486,7 @@ public class DataVisInputs : MonoBehaviour
                 }
             }
 
-            masterGUIHandler.HighlightConnectionsbyCoauthor();
+            ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().CallAlgorithm();
         }
 
     }
@@ -552,7 +550,7 @@ public class DataVisInputs : MonoBehaviour
                             }
                         }
 
-                        masterGUIHandler.HighlightConnectionsbyCoauthor();
+                        //masterGUIHandler.HighlightConnectionsbyCoauthor();
                     }
                 }
             }

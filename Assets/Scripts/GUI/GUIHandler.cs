@@ -28,7 +28,6 @@ public class GUIHandler : MonoBehaviour {
 
 	private XmlLoader xmlLoader;
 	private SplineDecorator refToSD;
-	private bool SearchEnabled = false;
 
 	void Awake()
 	{
@@ -50,7 +49,6 @@ public class GUIHandler : MonoBehaviour {
     public void EnableAlgorithm()
     {
         mostRecentInput = inputField.text;
-        SearchEnabled = true;
 
         if (inputField.text != null && inputField.text != "")
         {
@@ -99,7 +97,7 @@ public class GUIHandler : MonoBehaviour {
         List<string> uniqueGeneralAuthors = refToSD.GeneralAuthors.Distinct().ToList();
         UpdateButtons(uniqueGeneralAuthors);
 
-        refToSD.HighlightAuthors(uniqueGeneralAuthors);
+        //TODO: Make an overload for this refToSD.HighlightAuthors(uniqueGeneralAuthors);
 
         calledConnectionInfo = true;
     }
@@ -110,15 +108,18 @@ public class GUIHandler : MonoBehaviour {
         refToSD.GetTopCoauthors(inputtedAuthor);
 
         List<string> uniqueGeneralAuthors = refToSD.GeneralAuthors.Distinct().ToList();
-        UpdateButtons(uniqueGeneralAuthors);
+        List<string> uniqueGeneralArticles = refToSD.GeneralArticles.Distinct().ToList();
+        UpdateButtons(uniqueGeneralArticles);
 
-        refToSD.HighlightAuthors(uniqueGeneralAuthors);
+        refToSD.HighlightAuthors(inputtedAuthor, uniqueGeneralAuthors);
 
         calledConnectionInfo = true;
     }
 
+    //TODO: Change Unique General Authors to UniqueGeneralArticles
     private void UpdateButtons(List<string> uniqueGeneralAuthors)
     {
+        Debug.Log("Unique General Authors: " + uniqueGeneralAuthors.Count);
         DestroyButtons();
 
         int buttonCount = 0;
@@ -131,7 +132,15 @@ public class GUIHandler : MonoBehaviour {
             Button button;
 
             button = Instantiate(DefaultButton);
-            button.transform.GetChild(0).GetComponent<Text>().text = uniqueGeneralAuthors[i];
+
+            string buildUp = uniqueGeneralAuthors[i] + " - ";
+            foreach (string author in DataProcessor.articleContainerDictionary[uniqueGeneralAuthors[i]].Authors)
+            {
+                buildUp += author + ", ";
+            }
+            string finalString  = buildUp.Replace(buildUp.Substring(buildUp.Length - 1, 1).ToCharArray()[0], '.');
+
+            button.transform.GetChild(0).GetComponent<Text>().text = finalString;
             /* This will retain local orientation and scale rather than world orientation and scale, which can prevent
 				 * common UI scaling issues.*/
             button.transform.SetParent(gridImage, false); //originally, this was button.transform.parent = gridImage;
@@ -165,7 +174,10 @@ public class GUIHandler : MonoBehaviour {
     public void SwitchUI(Text txt) {
 		if (isOnArticle) {
 			isOnArticle = false;
-			txt.text = "Articles by Category";
+			txt.text = "Selected Datapoint Information";
+            inputField.gameObject.transform.FindChild("Placeholder").GetComponent<Text>().text
+                = "<Title of Datapoint here>";
+
             GUIs[2].transform.FindChild("InputField Category").gameObject.SetActive(false);
             GUIs[2].transform.FindChild("Reset Button").gameObject.SetActive(true);
             //Reset the line renderer so connections aren't drawn again
@@ -174,21 +186,27 @@ public class GUIHandler : MonoBehaviour {
 				lineRend.SetVertexCount (0);
             refToSD.ReverseAuthors();
 			refToSD.Clean ();
-		} else {
+            refToSD.CleanConnections();
+            SetTitle("");
+            DestroyButtons();
+        } else {
 			isOnArticle = true;
-			txt.text = "Authors";
+			txt.text = "Coauthor Relationship (Input Wanted Author)";
+            inputField.gameObject.transform.FindChild("Placeholder").GetComponent<Text>().text
+             = "<Author name>";
             GUIs[2].transform.FindChild("InputField Category").gameObject.SetActive(true);
             GUIs[2].transform.FindChild("Reset Button").gameObject.SetActive(false);
-            inputField.text = "Joost Engelfriet";
+            SetTitle("");
+            DestroyButtons();
 
-            if (SearchEnabled && inputField.text != null && inputField.text != "")
+            /*if (SearchEnabled && inputField.text != null && inputField.text != "")
             {
                 HighlightConnectionsbyCoauthor(inputField.text);
             }
             else if (SearchEnabled)
             {
                 HighlightConnectionsbyCoauthor();
-            }
+            }*/
         }
 	}
 

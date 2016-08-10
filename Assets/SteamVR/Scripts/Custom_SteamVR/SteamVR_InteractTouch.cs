@@ -105,61 +105,66 @@ public class SteamVR_InteractTouch : MonoBehaviour
         {
             print("not found");
         }
-        string titleStr;
-        string catStr;
-        if (collider.transform.parent)
+
+        //The title of the GUI will be updated only when the user is not on the "Input Author" section.
+        if (!masterGUIHandler.isOnArticle)
         {
-            if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Articles)
+            string titleStr;
+            string catStr;
+            if (collider.transform.parent)
             {
-                titleStr = collider.GetComponent<SplineDecorator>().title;
-                catStr = collider.transform.parent.parent.GetComponent<SplineDecorator>().title;
-            }
-            else if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Singleton)
-            {
-                titleStr = collider.GetComponent<SplineDecorator>().title;
-                catStr = "Article";
-            }
-            else if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Years)
-            {
-                titleStr = collider.GetComponent<SplineDecorator>().title;
-                catStr = collider.transform.parent.GetComponent<SplineDecorator>().title;
+                if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Articles)
+                {
+                    titleStr = collider.GetComponent<SplineDecorator>().title;
+                    catStr = collider.transform.parent.parent.GetComponent<SplineDecorator>().title;
+                }
+                else if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Singleton)
+                {
+                    titleStr = collider.GetComponent<SplineDecorator>().title;
+                    catStr = "Article";
+                }
+                else if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Years)
+                {
+                    titleStr = collider.GetComponent<SplineDecorator>().title;
+                    catStr = collider.transform.parent.GetComponent<SplineDecorator>().title;
+                }
+                else
+                {
+                    titleStr = "err";
+                    catStr = "cat err";
+                }
             }
             else
             {
-                titleStr = "err";
-                catStr = "cat err";
+                titleStr = collider.transform.GetComponent<SplineDecorator>().title;
+                catStr = "DBPL";
             }
+
+            Transform gridImage = GameObject.FindGameObjectWithTag("Grid Image").transform;
+
+            int breakPoint = collider.GetComponent<SplineDecorator>().DataSetStrings.Count;
+
+            Button button = null;
+            buttonCount = 0;
+            dataVisInputs.ResetGridImage();
+
+            masterGUIHandler.DestroyButtons();
+
+            for (int i = 0; i < breakPoint; i++)
+            {
+                buttonCount++;
+
+                button = Instantiate(masterGUIHandler.MenuButton);
+                button.transform.GetChild(0).GetComponent<Text>().text = collider.GetComponent<SplineDecorator>().DataSetStrings[i];
+                /* This will retain local orientation and scale rather than world orientation and scale, which can prevent
+                 * common UI scaling issues.*/
+                button.transform.SetParent(gridImage, false); //originally, this was button.transform.parent = gridImage;
+                button.transform.localScale = Vector3.one;
+                button.transform.name = "Button (" + buttonCount + ")";
+            }
+
+            masterGUIHandler.SetTitle(catStr + " - " + titleStr);
         }
-        else
-        {
-            titleStr = collider.transform.GetComponent<SplineDecorator>().title;
-            catStr = "DBPL";
-        }
-
-        Transform gridImage = GameObject.FindGameObjectWithTag("Grid Image").transform;
-
-        int breakPoint = collider.GetComponent<SplineDecorator>().DataSetStrings.Count;
-
-        Button button = null;
-        buttonCount = 0;
-        dataVisInputs.ResetGridImage();
-
-        masterGUIHandler.DestroyButtons();
-
-        for (int i = 0; i < breakPoint; i++)
-        {
-            buttonCount++;
-
-            button = Instantiate(masterGUIHandler.MenuButton);
-            button.transform.GetChild(0).GetComponent<Text>().text = collider.GetComponent<SplineDecorator>().DataSetStrings[i];
-            /* This will retain local orientation and scale rather than world orientation and scale, which can prevent
-             * common UI scaling issues.*/
-            button.transform.SetParent(gridImage, false); //originally, this was button.transform.parent = gridImage;
-            button.transform.localScale = Vector3.one;
-            button.transform.name = "Button (" + buttonCount + ")";
-        }
-
-        masterGUIHandler.SetTitle(catStr + " - " + titleStr);
 
         //FIXED: Don't pass in buttonCount here as it can just be done from the ButtonCount getter/setter
         dataVisInputs.AllowExpansion(collider.gameObject, this.gameObject.GetComponent<SteamVR_TrackedController>());
