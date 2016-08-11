@@ -234,9 +234,9 @@ public class ViveControllerInput : BaseInputModule
 		} else if (CurrentPoint [1] != null && CurrentPoint[1].layer == 5) {
 			CurrentPoint [1] = PointEvents [1].pointerCurrentRaycast.gameObject;
 			GameObject newEntered = ExecuteEvents.ExecuteHierarchy (CurrentPoint [1], PointEvents [1], ExecuteEvents.pointerEnterHandler);
-			//Debug.Log (newEntered.name);
 			if (newEntered != null) {
-				guiSelected = true;
+                //Debug.Log(CurrentPoint[1].name);
+                guiSelected = true;
 			} else {
 				newEntered = ExecuteEvents.ExecuteHierarchy (CurrentPoint [1], PointEvents [1], ExecuteEvents.pointerExitHandler);
 				guiSelected = false;

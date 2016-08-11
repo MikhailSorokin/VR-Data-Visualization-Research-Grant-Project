@@ -116,7 +116,7 @@ public class SteamVR_InteractTouch : MonoBehaviour
                 if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Articles)
                 {
                     titleStr = collider.GetComponent<SplineDecorator>().title;
-                    catStr = collider.transform.parent.parent.GetComponent<SplineDecorator>().title;
+                    catStr = collider.transform.parent.GetComponent<SplineDecorator>().title;
                 }
                 else if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Singleton)
                 {

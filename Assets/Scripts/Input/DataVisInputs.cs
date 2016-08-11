@@ -96,8 +96,8 @@ public class DataVisInputs : MonoBehaviour
         ControllerManager.DoubleTouchpadReleased += new DoubleControllerInteractionEventHandler(NoTransitions);
         ControllerManager.MapDoubleTouchpadReleasedToKeyPress += new KeyboardInteractionEventHandler(NoTransitions);
 
-        ControllerManager.DoubleTriggerPressed += new DoubleControllerInteractionEventHandler(ScaleUp);
-        ControllerManager.DoubleTriggerReleased += new DoubleControllerInteractionEventHandler(StopScale);
+        //ControllerManager.DoubleTriggerPressed += new DoubleControllerInteractionEventHandler(ScaleUp);
+        //ControllerManager.DoubleTriggerReleased += new DoubleControllerInteractionEventHandler(StopScale);
 
         ControllerManager.TriggerPressed += new ControllerInteractionEventHandler(DoTriggerPressed);
         ControllerManager.TriggerReleased += new ControllerInteractionEventHandler(DoTriggerReleased);

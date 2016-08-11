@@ -80,6 +80,8 @@ public class SplineDecorator : MonoBehaviour
     private const float CONN_SCALE = 0.04f;
     private const int NUM_CONNOBJS = 8;
 
+    Dictionary<char, int> alphabetDict = new Dictionary<char, int>();
+
     // connector vars
     public Transform connector;
     public List<Transform> connectorSplines;
@@ -103,6 +105,14 @@ public class SplineDecorator : MonoBehaviour
     void Start()
     {
         masterGUIHandler = FindObjectOfType<GUIHandler>();
+
+        char let = 'a';
+
+        for (int i = 1; i < 27; i++)
+        {
+            alphabetDict.Add(let, i);
+            let++;
+        }
     }
 
     public void HighlightArticles(string str)
@@ -150,8 +160,9 @@ public class SplineDecorator : MonoBehaviour
 
             cube.position = midPoint;
             cube.LookAt(pA);
-
+            
         }
+        
     }
 
 
@@ -385,7 +396,8 @@ public class SplineDecorator : MonoBehaviour
 
                                 if (transform.GetComponent<SplineDecorator>())
                                 {
-                                    dec = transform.GetComponent<SplineDecorator>().title.Remove(3) + i.ToString();
+                                    dec = yr.ToString();
+                                    //dec = transform.GetComponent<SplineDecorator>().title.Remove(3) + i.ToString();
                                 }
                                 elements[i].GetComponent<SplineDecorator>().title = dec;
 
@@ -426,7 +438,14 @@ public class SplineDecorator : MonoBehaviour
             {
                 if (DataSetStrings.Count > 0)
                 {
-                    int r = Random.Range(0, DataSetStrings.Count);
+                    int r = 27; //Random.Range(0, DataSetStrings.Count);
+
+                    r = node.Title.ToLower()[0] - 'a' + 1;
+
+                    if (r < 0)
+                        r = 0;
+                    if (r > 25)
+                        r = 27;
 
                     for (int i = 0; i < elements.Length; i++)
                     {
@@ -438,10 +457,10 @@ public class SplineDecorator : MonoBehaviour
                                 elements[i] = Instantiate(items[0]) as Transform;
 
                                 SplineDecorator sp = elements[i].GetComponent<SplineDecorator>();
-                                sp.title = DataSetStrings[i];
-                                float stepSize = 1f / (DataSetStrings.Count);
+                                sp.title = node.Title;
+                                float stepSize = 1f / frequency;
                                 Vector3 position = spline.GetPoint((float)i * stepSize);
-
+                                //Vector3 position = Vector3.Lerp(transform.parent.TransformPoint(startLoc), transform.parent.TransformPoint(endLoc), i * stepSize);
                                 elements[i].localPosition = position;
                                 elements[i].LookAt(position + spline.GetDirection((float)i * stepSize));
                                 elements[i].parent = transform;
@@ -538,6 +557,58 @@ public class SplineDecorator : MonoBehaviour
 
                 }
             }
+            else if (datasetCategory == DatasetCategory.Singleton)
+            {
+                
+                if (elements.Length > 0)
+                {
+                    for (int i = 0; i < DataSetStrings.Count; i++)
+                    {
+                        if (elements[i] == null)
+                        {
+                            elements[i] = Instantiate(items[0]) as Transform;
+                            string dec = "";
+
+                            if (transform.GetComponent<SplineDecorator>())
+                            {
+                                dec = DataSetStrings[i];
+                                //dec = yr.ToString();
+                                //dec = transform.GetComponent<SplineDecorator>().title.Remove(3) + i.ToString();
+                            }
+                            elements[i].GetComponent<SplineDecorator>().title = dec;
+                            
+                            Vector3 position = new Vector3(i * .2f, 0, 0);
+                            
+                            elements[i].LookAt(position + spline.GetDirection((float)i));
+                            elements[i].parent = transform;
+                            elements[i].localPosition = position;
+
+                            elements[i].localScale = Vector3.one * .02f;
+                            node.MasterNodeGameObjects[1] = elements[i].gameObject;
+                            SplineDecorator sp = elements[i].GetComponent<SplineDecorator>();
+                            if (!propertiesSet)
+                                DataSetStrings.Add(node.Title);
+                            sp.AddInData(node);
+
+                            TextMesh[] allTextMeshes = elements[i].GetComponentsInChildren<TextMesh>();
+
+                            foreach (TextMesh textMesh in allTextMeshes)
+                            {
+                                textMesh.text = dec;
+                            }
+                        }
+                        else
+                        {
+                            if (!propertiesSet)
+                                DataSetStrings.Add(node.Title);
+                            node.MasterNodeGameObjects[1] = elements[i].gameObject;
+                            SplineDecorator sp = elements[i].GetComponent<SplineDecorator>();
+                            sp.AddInData(node);
+                        }
+                        
+                    }
+                }
+            }
             else
             {
                 print("Not found: " + datasetCategory + ".");
@@ -583,7 +654,7 @@ public class SplineDecorator : MonoBehaviour
             string searchPattern = sourceAuthor;
 
             if (transform.GetChild(0).GetComponent<TextMesh>()
-                && Regex.Matches(source, searchPattern).Count == 1)
+                && Regex.Matches(source, searchPattern).Count == 0)
             {
                 foreach (string author in generalList)
                 {
@@ -918,16 +989,53 @@ public class SplineDecorator : MonoBehaviour
         }
     }
 
-    public void ExpandDataPoint()
+    private void LoadLinear()
     {
 
+    }
+
+    public void ExpandDataPoint()
+    {
         if (doOnce)
         {
             doOnce = false;
-
             if (datasetCategory == DatasetCategory.Singleton)
             {
-                print("singleton");
+                if (expanded)
+                {
+                    ContractDataPoint();
+                }
+                else
+                {
+                    //print ("expanded");
+
+                    if (transform.GetChild(0) && transform.GetChild(0).GetComponent<TextMesh>())
+                    {
+                        transform.GetChild(0).localScale = Vector3.one;
+                    }
+
+                    List<MasterNode> nodeList = new List<MasterNode>();
+
+                    foreach (string str in DataSetStrings)
+                    {
+                        nodeList.Add(DataProcessor.articleContainerDictionary[str]);
+                    }
+
+                    LoadLinear();
+                    GetComponent<MeshRenderer>().enabled = false;
+                    transform.GetChild(0).gameObject.SetActive(false);
+
+                    if (!propertiesSet)
+                    {
+                        elements = new Transform[64];
+                        startLoc = transform.localPosition;
+                        endLoc = transform.localPosition * 2f;
+                        propertiesSet = true;
+                    }
+
+                    expanded = true;
+                    StartCoroutine(TransitionExpandLinear(nodeList));
+                }
             }
             else
             {
@@ -995,8 +1103,7 @@ public class SplineDecorator : MonoBehaviour
     {
         float t = 0f;
         //VisibleChildren ();
-
-        print("there");
+        
         while (t < 1.0f)
         {
             for (int i = 0; i < frequency; i++)
@@ -1006,7 +1113,6 @@ public class SplineDecorator : MonoBehaviour
             }
             t += Time.deltaTime;
             yield return new WaitForFixedUpdate();
-
         }
         transform.localScale = Vector3.one * .5f;
         isMoving = false;
@@ -1014,7 +1120,6 @@ public class SplineDecorator : MonoBehaviour
         doOnce = true;
         if (!dataAdded)
         {
-            print("here");
             AddInData(nodeList); //MUST be after propertiesSet = true
             dataAdded = true;
         }
@@ -1030,6 +1135,58 @@ public class SplineDecorator : MonoBehaviour
         cube.localScale = new Vector3(.01f, .38f, .01f);
 
         yield return null;
+    }
+
+    public IEnumerator TransitionExpandLinear(List<MasterNode> nodeList)
+    {
+        float t = 0f;
+        //VisibleChildren ();
+
+        while (t < 1.0f)
+        {
+            for (int i = 0; i < frequency; i++)
+            {
+                transform.localPosition = Vector3.Lerp(startLoc, endLoc, t / 1f);
+                transform.localScale = Vector3.Lerp(Vector3.one * .015f, Vector3.one * .5f, t / 1f);
+            }
+            t += Time.deltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+        transform.localScale = Vector3.one * .5f;
+        isMoving = false;
+        //Below line has connectors load every time you expand something
+        doOnce = true;
+        if (!dataAdded)
+        {
+            AddInData(nodeList); //MUST be after propertiesSet = true
+            dataAdded = true;
+        }
+        EnableElements();
+        Brighten();
+        CallAlgorithm();
+
+        cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
+        cube.GetComponent<Renderer>().material = Resources.Load("Materials/T2", typeof(Material)) as Material;
+        cube.parent = transform.parent;
+        cube.localRotation = transform.localRotation;
+        cube.localPosition = Vector3.Lerp(startLoc, endLoc, .5f);
+        cube.localScale = new Vector3(.01f, .38f, .01f);
+
+
+        yield return null;
+    }
+
+    //To spread the datapoints across the line
+    void SpreadDatapoints()
+    {
+        float leftMostPos = transform.localPosition.x - transform.localScale.x / 2.0f;
+
+        float[] spreadPoints = new float[26];
+
+        for (int i = 0; i < spreadPoints.Length; i++)
+        {
+            spreadPoints[i] = leftMostPos + (i / 26.0f);
+        }
     }
 
     public IEnumerator TransitionContract()
@@ -1745,8 +1902,8 @@ public class SplineDecorator : MonoBehaviour
                 item.transform.parent = splineConn.transform;
 
                 Vector3 tempScale = item.transform.localScale;
-                tempScale.x *= CONN_SCALE * scaleNumber;
-                tempScale.y *= CONN_SCALE * scaleNumber;
+                tempScale.x *= CONN_SCALE * scaleNumber * GameObject.FindGameObjectWithTag("Menu").transform.localScale.x;
+                tempScale.y *= CONN_SCALE * scaleNumber * GameObject.FindGameObjectWithTag("Menu").transform.localScale.y;
                 item.transform.localScale = tempScale;
 
                 updatedEdge.ScaleVectorTransform = item.transform;
@@ -1849,7 +2006,6 @@ public class SplineDecorator : MonoBehaviour
 
                 if (sp)
                 {
-
                     sp.Clean();
                 }
 

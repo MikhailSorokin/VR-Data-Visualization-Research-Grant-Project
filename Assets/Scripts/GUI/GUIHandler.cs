@@ -117,14 +117,14 @@ public class GUIHandler : MonoBehaviour {
     }
 
     //TODO: Change Unique General Authors to UniqueGeneralArticles
-    private void UpdateButtons(List<string> uniqueGeneralAuthors)
+    private void UpdateButtons(List<string> uniqueGeneralArticles)
     {
-        Debug.Log("Unique General Authors: " + uniqueGeneralAuthors.Count);
+        Debug.Log("Unique General Authors: " + uniqueGeneralArticles.Count);
         DestroyButtons();
 
         int buttonCount = 0;
 
-        int breakPoint = uniqueGeneralAuthors.Count;
+        int breakPoint = uniqueGeneralArticles.Count;
         Transform gridImage = GameObject.FindGameObjectWithTag("Grid Image").transform;
         for (int i = 0; i < breakPoint; i++)
         {
@@ -133,12 +133,13 @@ public class GUIHandler : MonoBehaviour {
 
             button = Instantiate(DefaultButton);
 
-            string buildUp = uniqueGeneralAuthors[i] + " - ";
-            foreach (string author in DataProcessor.articleContainerDictionary[uniqueGeneralAuthors[i]].Authors)
+            string buildUp = uniqueGeneralArticles[i] + " - ";
+            foreach (string author in DataProcessor.articleContainerDictionary[uniqueGeneralArticles[i]].Authors)
             {
                 buildUp += author + ", ";
             }
-            string finalString  = buildUp.Replace(buildUp.Substring(buildUp.Length - 1, 1).ToCharArray()[0], '.');
+            string finalString  = buildUp.Trim().Remove(buildUp.Length - 2);
+            finalString += ".";
 
             button.transform.GetChild(0).GetComponent<Text>().text = finalString;
             /* This will retain local orientation and scale rather than world orientation and scale, which can prevent
@@ -178,7 +179,7 @@ public class GUIHandler : MonoBehaviour {
             inputField.gameObject.transform.FindChild("Placeholder").GetComponent<Text>().text
                 = "<Title of Datapoint here>";
 
-            GUIs[2].transform.FindChild("InputField Category").gameObject.SetActive(false);
+            //GUIs[2].transform.FindChild("InputField Category").gameObject.SetActive(false);
             GUIs[2].transform.FindChild("Reset Button").gameObject.SetActive(true);
             //Reset the line renderer so connections aren't drawn again
             LineRenderer lineRend = refToSD.gameObject.GetComponent<LineRenderer>();
@@ -191,11 +192,11 @@ public class GUIHandler : MonoBehaviour {
             DestroyButtons();
         } else {
 			isOnArticle = true;
-			txt.text = "Coauthor Relationship (Input Wanted Author)";
+			txt.text = "Coauthor(s) Relationship (Input Wanted Author)";
             inputField.gameObject.transform.FindChild("Placeholder").GetComponent<Text>().text
              = "<Author name>";
-            GUIs[2].transform.FindChild("InputField Category").gameObject.SetActive(true);
-            GUIs[2].transform.FindChild("Reset Button").gameObject.SetActive(false);
+            //GUIs[2].transform.FindChild("InputField Category").gameObject.SetActive(true);
+            GUIs[2].transform.FindChild("Reset Button").gameObject.SetActive(true);
             SetTitle("");
             DestroyButtons();
 
