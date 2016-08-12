@@ -4,11 +4,13 @@ A Virtual Reality data visualization research grant project.
 How to use this visualization: 
 
 IMPORTANT - The first thing to do is download the DBLP dataset from here: https://www.dropbox.com/sh/qyf90qe3yxon2xi/AAAQzeRPpmJ-1lxhUFWavH8ba?dl=0.
-Warning, this file is pretty large (about 1 GB of space) and I couldn't
+WARNING, this file is pretty large (about 1 GB of space) and I couldn't
 include it as part of the Github repository, so it will have to be like this for now.
+
 However, if you push a change with the XML file, the gitignore file will make sure that
 the XML file won't be pushed with the rest of the changes. 
-Also IMPORTANT, Place this file in the Assets directory once you have downloaded it and AFTER
+
+Also IMPORTANT, place this file in the Assets directory once you have downloaded it and AFTER
 you have opened the project at least once (metadata needs to be loaded/assets need to be generated and such)!
 
 Controls will be shown on the GUI displays in game.
@@ -28,16 +30,19 @@ Here are sample authors to use for testing connections:
 
 You can find more interesting authors if you take a look through the XML file.
 
-Once you have typed in the author, press enter on the keyboard or press down on the touchpad to load in the connections.
+Once you have typed in the author, press enter on the keyboard or press down on either controller's touchpad to load in the connections.
+
 IMPORTANT - make sure the title of the GUI is "Coauthors" or else connections will not be drawn.
 
-This will show connections between the coauthors' articles and all of the other inputted author's connections. As in,
-it goes two degrees and finds connections of the coauthor, rather than direct connections due to the way our 
-visualization is currently set up. The reason for this is because the lowest level has datapoints as articles, rather
-than authors. We are in the process of changing this to have the lowest level be authors and lines connecting between 
-the authors being direct (1st degree) connections to represent coauthor relationship.
+The current connections shown are between the inputted author and all of his coauthors and coauthors' coauthors. As in,
+the connections go "one hop out" and finds connections of coauthor as well, rather than direct connections. This is due to the way our 
+visualization is currently set up, in which the lowest level has datapoints as articles, rather
+than authors. We are in the process of changing this to have the lowest level be authors and the lines connecting between 
+the authors being direct (1st degree) connections to represent coauthor relationships.
 
-If you wish to remove the connections from your current view, just press switch on the menu GUI and it will clean all the connections. You can then redraw connections again by switching back and repeating the steps, listed under the connections section.
+If you wish to remove the connections from your current view, just press switch on the menu GUI and it will clean all the connections. You can then redraw connections again by switching back to the "Coauthors" title and repeating the steps above.
+
+Right now, the connecting splines are spread out from each other and it can be hard to see where lines are being drawn to and from. This is something that we, or anyone else interested, can explore.
 
 # Alternative Input Options
 With the current way of doing input, one will usually have to take off the headset to see the keyboard. So, it will be cool if there are some ways to explore input in VR. One suggestion could be using the camera on the Vive headset. If a collaborator would like to explore this option, that would be awesome.
