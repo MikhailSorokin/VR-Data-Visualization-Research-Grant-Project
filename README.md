@@ -10,7 +10,7 @@ include it as part of the Github repository, so it will have to be like this for
 However, if you push a change with the XML file, the gitignore file will make sure that
 the XML file won't be pushed with the rest of the changes. 
 
-Also IMPORTANT, place this file in the Assets directory once you have downloaded it and AFTER
+Also IMPORTANT, place this file in the ROOT directory of the github project, once you have downloaded it, and AFTER
 you have opened the project at least once (metadata needs to be loaded/assets need to be generated and such)!
 
 Controls will be shown on the GUI displays in game.
