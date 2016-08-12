@@ -58,7 +58,7 @@ public class SplineDecorator : MonoBehaviour
         "Game Development", "Cybersecurity", "Machine Learning", "Networking", "Databases", "Human Computer Interaction"
     };
 
-    private Color[] colorCategory =
+    private static Color[] colorCategory =
     {
         Color.white, Color.green, Color.magenta, Color.red, Color.blue, Color.yellow, Color.cyan,
         new Color(255f/255f, 175f/255f, 0f, 255f/255f), new Color(255f/255f, 10f/255f, 0f, 255f/255f), new Color(81f/255f, 0f, 255f/255f, 255f/255f), new Color(102f/255f, 255f/255f, 255f/255f, 255f/255f),
@@ -93,14 +93,11 @@ public class SplineDecorator : MonoBehaviour
 
     // lookup variables from data points
     public Dictionary<Transform, string> dataLookups;
-
-    private List<string> algorithmSourceAuthors = new List<string>();
-    private List<string> algorithmDestAuthors = new List<string>();
-    private List<string> generalAuthors = new List<string>();
-    private List<string> generalArticles = new List<string>();
     private List<Vector3> allPositions = new List<Vector3>();
     public List<BezierSpline> connSplineList = new List<BezierSpline>();
     private string originalLabel = "";
+
+    private static List<Edge> allConnections = new List<Edge>();
 
     void Start()
     {
@@ -112,21 +109,6 @@ public class SplineDecorator : MonoBehaviour
         {
             alphabetDict.Add(let, i);
             let++;
-        }
-    }
-
-    public void HighlightArticles(string str)
-    {
-        int[] years = new int[0];
-        for (int i = 0; i < years.Length; i++)
-        {
-            GameObject button = GameObject.FindGameObjectWithTag("Button");
-            Text tx = button.GetComponentInChildren<Text>();
-            if (tx.text == "Article")
-            {
-                //print ("button - " + authorArticles [a] [0]);
-                //tx.text = authorArticles [a] [0];
-            }
         }
     }
 
@@ -233,82 +215,6 @@ public class SplineDecorator : MonoBehaviour
                 Vector3 position = transform.InverseTransformPoint(spline3.GetPoint((float)f * stepSize));
                 oRot3[f] = new Quaternion(0f, 270f, 270f, 0f);
                 oPos3[f] = position;
-            }
-        }
-
-    }
-
-    public void loadTransforms()
-    {
-        oPos1 = new Vector3[frequency];
-        oPos2 = new Vector3[frequency];
-        oRot1 = new Quaternion[frequency];
-        oRot2 = new Quaternion[frequency];
-
-        for (int i = 0; i < frequency; i++)
-        {
-            oPos1[i] = new Vector3();
-            oPos2[i] = new Vector3();
-            oRot1[i] = new Quaternion();
-            oRot2[i] = new Quaternion();
-
-        }
-    }
-
-    public void Highlight(List<string> articles)
-    {
-
-        if (GetComponent<Renderer>())
-        {
-            GetComponent<Renderer>().material.color = Color.red;
-        }
-        else
-        {
-            foreach (Transform ele in elements)
-            {
-                if (ele)
-                    ele.GetComponent<SplineDecorator>().Highlight(articles);
-            }
-        }
-
-        if (datasetCategory == DatasetCategory.Articles)
-        {
-            if (articles.Contains(DataSetStrings[0]))
-            {
-                GetComponent<Renderer>().material.color = Color.red;
-            }
-        }
-        else if (datasetCategory == DatasetCategory.Years)
-        {
-            foreach (string article in DataSetStrings)
-            {
-                if (articles.Contains(article))
-                {
-                    GetComponent<Renderer>().material.color = Color.red;
-                }
-            }
-        }
-        else if (datasetCategory == DatasetCategory.Decades)
-        {
-            foreach (string article in DataSetStrings)
-            {
-                if (articles.Contains(article))
-                {
-                    GetComponent<Renderer>().material.color = Color.red;
-                }
-            }
-        }
-        else if (datasetCategory == DatasetCategory.Categories)
-        {
-            foreach (string article in articles)
-            {
-                foreach (Transform element in elements)
-                {
-                    if (element.GetComponent<SplineDecorator>().title == DataProcessor.articleContainerDictionary[article].Category)
-                    {
-                        element.GetComponent<SplineDecorator>().Highlight(articles);
-                    }
-                }
             }
         }
 
@@ -1329,60 +1235,7 @@ public class SplineDecorator : MonoBehaviour
         yield return null;
     }
 
-    public IEnumerator TransitionToVis2(Material mat)
-    {
-        float t = 0f;
-        Color start;
-        bool tint = false;
-        if (mat.HasProperty("_TintColor"))
-        {
-            start = mat.GetColor("_TintColor");
-            tint = true;
-        }
-        else
-        {
-            start = mat.color;
-        }
-        start = new Color(start.r, start.g, start.b, .001f);
-        Color endCol = new Color(start.r, start.g, start.b, 1f);
-        dimmed = false;
-        while (t < 1.0f)
-        {
-            if (tint)
-                mat.SetColor("_TintColor", Color.Lerp(start, endCol, t / 1f));
-            else
-                mat.color = Color.Lerp(start, endCol, t / 1f);
-            t += Time.deltaTime * 4f;
-            yield return new WaitForFixedUpdate();
-        }
-        yield return null;
-    }
-
     public void DimSurroundingVisuals(Transform frame)
-    {
-
-        for (int i = 0; i < elements.Length; i++)
-        {
-            if (elements[i])
-            {
-                if (elements[i] != frame)
-                {
-                    elements[i].GetComponent<SplineDecorator>().Dim();
-                    print("dimmed: " + elements[i]);
-                    if (elements[i].GetComponent<Renderer>())
-                    {
-                        StartCoroutine(TransitionToInvis(elements[i].GetComponent<Renderer>().material));
-                    }
-                }
-                else
-                {
-                    elements[i].GetComponent<SplineDecorator>().Brighten();
-                }
-            }
-        }
-    }
-
-    public void DimSurroundingVisuals2(Transform frame)
     {
         if (datasetCategory == DatasetCategory.Decades)
         {
@@ -1408,7 +1261,7 @@ public class SplineDecorator : MonoBehaviour
         }
         else
         {
-            transform.parent.GetComponent<SplineDecorator>().DimSurroundingVisuals2(transform.parent);
+            transform.parent.GetComponent<SplineDecorator>().DimSurroundingVisuals(transform.parent);
             Brighten();
         }
     }
@@ -1417,14 +1270,9 @@ public class SplineDecorator : MonoBehaviour
     {
         if (!dimmed)
         {
-            if (transform.FindChild("Ring_01"))
+            Material mat = transform.FindChild("Ring_01") ? transform.FindChild("Ring_01").GetComponent<Renderer>().material : GetComponent<Renderer>().material;
+            if (mat != null)
             {
-                Material mat = transform.FindChild("Ring_01").GetComponent<Renderer>().material;
-                StartCoroutine(TransitionToInvis(mat));
-            }
-            if (transform.GetComponent<Renderer>())
-            {
-                Material mat = GetComponent<Renderer>().material;
                 StartCoroutine(TransitionToInvis(mat));
             }
             for (int i = 0; i < transform.childCount; i++)
@@ -1450,17 +1298,15 @@ public class SplineDecorator : MonoBehaviour
         if (dimmed)
         {
 
-            if (transform.FindChild("Ring_01"))
+            Material mat = transform.FindChild("Ring_01") ? transform.FindChild("Ring_01").GetComponent<Renderer>().material : GetComponent<Renderer>().material;
+            if (mat != null)
             {
-                Material mat = transform.FindChild("Ring_01").GetComponent<Renderer>().material;
                 StartCoroutine(TransitionToVis(mat));
-            }
-            if (transform.GetComponent<Renderer>())
+            } else
             {
-                Material mat = GetComponent<Renderer>().material;
-                StartCoroutine(TransitionToVis2(mat));
-
+                Debug.LogError("There is no renderer on the object or the RING_01.");
             }
+
             for (int i = 0; i < transform.childCount; i++)
             {
                 if (transform.GetChild(i).GetComponent<TextMesh>())
@@ -1482,98 +1328,10 @@ public class SplineDecorator : MonoBehaviour
     }
 
     /// <summary>
-    /// Make edges connect from one datapoint to another based on all of the co-authors within a 
-    /// certain group.
-    /// </summary>
-    public void GetTopCoauthors()
-    {
-        Dictionary<int, List<string>> numCoauthorsToCoauthorlist = new Dictionary<int, List<string>>();
-        int currentCoauthorCount = 0;
-        int MIN_THRESHOLD = 15;
-        bool foundAtLeastOneConnection = false;
-
-        foreach (AuthorData ad in DataProcessor.allAuthorData)
-        {
-            currentCoauthorCount = ad.CoauthorNum; //TODO: update CoauthorNum in DataProcessor class
-            if (currentCoauthorCount >= MIN_THRESHOLD)
-            {
-                if (!numCoauthorsToCoauthorlist.ContainsKey(currentCoauthorCount))
-                    numCoauthorsToCoauthorlist[currentCoauthorCount] = new List<string>();
-                numCoauthorsToCoauthorlist[currentCoauthorCount].Add(ad.Author);
-                generalAuthors.Add(ad.Author);
-                foundAtLeastOneConnection = true;
-            }
-        }
-
-        if (foundAtLeastOneConnection)
-        {
-            //if (!connectionsDrawn)
-            // {
-            DrawConnectors(numCoauthorsToCoauthorlist);
-            connectionsDrawn = true;
-            //} else
-            // {
-            //CleanConnections();
-            //DrawConnectors(numCoauthorsToCoauthorlist);
-            //}
-        }
-        else
-        {
-            Dim();
-        }
-    }
-
-    /// <summary>
-    /// Make edges connect from one datapoint to another based on all of the co-authors of a
-    /// specific author.
-    /// </summary>
-    public void GetTopCoauthors(string selectedAuthor)
-    {
-        if (generalAuthors.Count > 0)
-        {
-            generalAuthors.Clear();
-        }
-
-        List<string> allCoauthors = new List<string>();
-
-        allCoauthors.Add(selectedAuthor);
-        generalAuthors.Add(selectedAuthor);
-
-        //TODO: Might want to do find all articles in the DrawConnectors(List<string> method) to take in a list of authors
-        //Add the main author's articles to the beginning of the list to have connections drawn from his/her
-        //articles to all of neighboring coauthors' articles
-
-        //TODO: Algorithm to find all coauthors from a single author
-        List<string> coauthorsAdjToAuthor = DataProcessor.FindCoauthors(selectedAuthor);
-
-        foreach (string coauthor in coauthorsAdjToAuthor)
-        {
-            generalAuthors.Add(coauthor);
-            allCoauthors.Add(coauthor);
-        }
-
-        //FIXED: Add a condition when one should draw connections and when it shouldn't happen.
-        //TODO: Add a better check of distinct elements in an arraylist or array in order to get the length of
-        //elements within
-        Debug.Log(allCoauthors.Distinct().ToArray().Length);
-        if (allCoauthors.Distinct().ToArray().Length > 1)
-        {
-            //Debug.Log(allCoauthors[allCoauthors.Count - 1] + " Count: " + allCoauthors.Count);
-            DrawConnectors(allCoauthors);
-        }
-        else
-        {
-            Dim();
-        }
-    }
-
-    private List<Edge> allConnections = new List<Edge>();
-
-    /// <summary>
     /// This method will be for all articles in the dictionary, as it notifies of a relationship between all articles within the current graph.
     /// It will be used to detect author profile relationships.
     /// </summary>
-    private void DrawConnectors(List<string> knownCoauthors)
+    public void DrawConnectors(List<string> knownCoauthors)
     {
         GameObject lastValidGO = null;
         GameObject sourceGO = null, destGO = null;
@@ -1619,7 +1377,8 @@ public class SplineDecorator : MonoBehaviour
                             //Add a factor of linePuffinessTotal
                             edge.ScaleVectorTransform.localScale *= 2.0f;
                             edgeTwo.ScaleVectorTransform.localScale *= 2.0f;
-                        } else
+                        }
+                        else
                         {
                             //Do connection adding here
                             coauthorCount += DataProcessor.articleContainerDictionary[destArticle].Authors.Count;
@@ -1674,8 +1433,8 @@ public class SplineDecorator : MonoBehaviour
                             allConnections.Add(edge);
                             allConnections.Add(edgeTwo);
 
-                            generalArticles.Add(sourceArticle);
-                            generalArticles.Add(destArticle);
+                            DataProcessor.GeneralArticles.Add(sourceArticle);
+                            DataProcessor.GeneralArticles.Add(destArticle);
                         }
 
                     }
@@ -1720,7 +1479,7 @@ public class SplineDecorator : MonoBehaviour
     /// This method will be for all articles in the dictionary, as it notifies of a relationship between all articles within the current graph.
     /// It will be used to detect author profile relationships.
     /// </summary>
-    private void DrawConnectors(Dictionary<int, List<string>> numCoauthorsToCoauthorlist)
+    public void DrawConnectors(Dictionary<int, List<string>> numCoauthorsToCoauthorlist)
     {
         GameObject lastValidGO = null;
         Color sameColorForBoth = colorCategory[0];
@@ -1817,13 +1576,11 @@ public class SplineDecorator : MonoBehaviour
 
     public void UpdateSplinePos()
     {
-
         foreach (BezierSpline item in connSplineList)
         {
             //print(item.gameObject);
             LoadConnectors(item);
         }
-        
     }
 
     private void LoadConnectors(BezierSpline splineConn)
@@ -2012,32 +1769,6 @@ public class SplineDecorator : MonoBehaviour
             }
         }
         Dim();
-    }
-
-    //All Getters and Setters
-    public List<string> SourceAuthors
-    {
-        get { return this.algorithmSourceAuthors; }
-        set { algorithmSourceAuthors = value; }
-    }
-
-    public List<string> DestAuthors
-    {
-        get { return this.algorithmDestAuthors; }
-        set { algorithmDestAuthors = value; }
-    }
-
-    public List<string> GeneralAuthors
-    {
-        get { return this.generalAuthors; }
-        set { generalAuthors = value; }
-    }
-
-
-    public List<string> GeneralArticles
-    {
-        get { return this.generalArticles; }
-        set { generalArticles = value; }
     }
 
     private int GetTotalCntVisibleNeighborGOs(List<string> neighborArticles)

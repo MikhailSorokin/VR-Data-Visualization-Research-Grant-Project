@@ -99,7 +99,7 @@ public class SteamVR_InteractTouch : MonoBehaviour
     {
         if (collider.transform.parent.parent)
         {
-            collider.transform.parent.parent.GetComponent<SplineDecorator>().DimSurroundingVisuals2(collider.transform.parent);
+            collider.transform.parent.parent.GetComponent<SplineDecorator>().DimSurroundingVisuals(collider.transform.parent);
         }
         else
         {

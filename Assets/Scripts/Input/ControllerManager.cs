@@ -147,7 +147,6 @@
                 MapGripToKeyRelease();
         }
 
-
         /*Trigger Press and Release Events*/
         public static void OnTriggerPressed(ControllerInteractionEventArgs e)
         {
@@ -164,8 +163,7 @@
         public static void OnTriggerReleased(ControllerInteractionEventArgs e)
         {
             if (TriggerReleased != null)
-                if (TriggerReleased != null)
-                    TriggerReleased(e);
+                TriggerReleased(e);
         }
 
         public static void OnTriggerReleased()

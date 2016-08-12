@@ -96,8 +96,9 @@ public class DataVisInputs : MonoBehaviour
         ControllerManager.DoubleTouchpadReleased += new DoubleControllerInteractionEventHandler(NoTransitions);
         ControllerManager.MapDoubleTouchpadReleasedToKeyPress += new KeyboardInteractionEventHandler(NoTransitions);
 
-        //ControllerManager.DoubleTriggerPressed += new DoubleControllerInteractionEventHandler(ScaleUp);
-        //ControllerManager.DoubleTriggerReleased += new DoubleControllerInteractionEventHandler(StopScale);
+        //TODO: Need to fix scaling with connections as the connections' scale appear messed up.
+        ControllerManager.DoubleTriggerPressed += new DoubleControllerInteractionEventHandler(ScaleUp);
+        ControllerManager.DoubleTriggerReleased += new DoubleControllerInteractionEventHandler(StopScale);
 
         ControllerManager.TriggerPressed += new ControllerInteractionEventHandler(DoTriggerPressed);
         ControllerManager.TriggerReleased += new ControllerInteractionEventHandler(DoTriggerReleased);
@@ -233,7 +234,6 @@ public class DataVisInputs : MonoBehaviour
 
     private void SetUpLineCube(Transform line, float midPointX, float desScaleX, float anchorPosX, float ogScaleX, uint contrIndex)
     {
-
         //Left Line Scale
         //var device = SteamVR_Controller.Input((int)contrIndex);
         //float contrSpd = device.velocity.magnitude;
@@ -249,7 +249,6 @@ public class DataVisInputs : MonoBehaviour
         Vector3 tempPosVector = line.localPosition;
         tempPosVector.x = anchorPosX + (line.localScale.x + ogScaleX) / 2.0f;
         line.localPosition = tempPosVector;
-
     }
 
     void ScaleUp()

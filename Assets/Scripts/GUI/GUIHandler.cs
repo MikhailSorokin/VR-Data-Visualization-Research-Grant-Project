@@ -92,9 +92,17 @@ public class GUIHandler : MonoBehaviour {
 
     public void HighlightConnectionsbyCoauthor()
     {
-        //Debug.Log("Calling connections with no author");
-        refToSD.GetTopCoauthors();
-        List<string> uniqueGeneralAuthors = refToSD.GeneralAuthors.Distinct().ToList();
+        Dictionary<int, List<string>> numCoauthorsToCoauthorList = DataProcessor.GetTopCoauthors();
+        if (numCoauthorsToCoauthorList.Count > 1)
+        {
+            refToSD.DrawConnectors(numCoauthorsToCoauthorList);
+        }
+        else
+        {
+            refToSD.Dim();
+        }
+
+        List<string> uniqueGeneralAuthors = DataProcessor.GeneralAuthors.Distinct().ToList();
         UpdateButtons(uniqueGeneralAuthors);
 
         //TODO: Make an overload for this refToSD.HighlightAuthors(uniqueGeneralAuthors);
@@ -104,22 +112,27 @@ public class GUIHandler : MonoBehaviour {
 
     public void HighlightConnectionsbyCoauthor(string inputtedAuthor)
     {
-        Debug.Log("Calling connections with a parameter author.");
-        refToSD.GetTopCoauthors(inputtedAuthor);
+        string[] coAuthors = DataProcessor.GetTopCoauthors(inputtedAuthor);
+        if (coAuthors.Length > 1)
+        {
+            refToSD.DrawConnectors(coAuthors.ToList());
+        }
+        else
+        {
+            refToSD.Dim();
+        }
 
-        List<string> uniqueGeneralAuthors = refToSD.GeneralAuthors.Distinct().ToList();
-        List<string> uniqueGeneralArticles = refToSD.GeneralArticles.Distinct().ToList();
+        List<string> uniqueGeneralArticles = DataProcessor.GeneralArticles.Distinct().ToList();
         UpdateButtons(uniqueGeneralArticles);
 
+        List<string> uniqueGeneralAuthors = DataProcessor.GeneralAuthors.Distinct().ToList();
         refToSD.HighlightAuthors(inputtedAuthor, uniqueGeneralAuthors);
 
         calledConnectionInfo = true;
     }
 
-    //TODO: Change Unique General Authors to UniqueGeneralArticles
     private void UpdateButtons(List<string> uniqueGeneralArticles)
     {
-        Debug.Log("Unique General Authors: " + uniqueGeneralArticles.Count);
         DestroyButtons();
 
         int buttonCount = 0;

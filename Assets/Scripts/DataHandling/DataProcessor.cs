@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// This class handles taking in all information and sending all information.
+/// This class handles taking in all information and sending all information to other classes if necessary.
 /// </summary>
 public static class DataProcessor {
 
@@ -14,7 +14,11 @@ public static class DataProcessor {
 	public static List<AuthorData> allAuthorData = new List<AuthorData>();
 
 	private static List<MasterNode> tempClusterMasterNodes = new List<MasterNode>();
-	private static int count = 0;
+    private static List<string> generalAuthors = new List<string>();
+    private static List<string> generalArticles = new List<string>();
+    private static List<string> algorithmSourceAuthors = new List<string>();
+    private static List<string> algorithmDestAuthors = new List<string>();
+    private static int count = 0;
 
 	public static void ReadAndProcessData(int sizeOfClusterRead)
 	{
@@ -445,6 +449,91 @@ public static class DataProcessor {
         }
 
         return coauthorsFromAuthor.Distinct().ToList();
+    }
+
+    /// <summary>
+    /// Make edges connect from one datapoint to another based on all of the co-authors within a 
+    /// certain group.
+    /// </summary>
+    public static Dictionary<int, List<string>> GetTopCoauthors()
+    {
+        Dictionary<int, List<string>> numCoauthorsToCoauthorlist = new Dictionary<int, List<string>>();
+        int currentCoauthorCount = 0;
+        int MIN_THRESHOLD = 15;
+
+        foreach (AuthorData ad in DataProcessor.allAuthorData)
+        {
+            currentCoauthorCount = ad.CoauthorNum; //TODO: update CoauthorNum in DataProcessor class
+            if (currentCoauthorCount >= MIN_THRESHOLD)
+            {
+                if (!numCoauthorsToCoauthorlist.ContainsKey(currentCoauthorCount))
+                    numCoauthorsToCoauthorlist[currentCoauthorCount] = new List<string>();
+                numCoauthorsToCoauthorlist[currentCoauthorCount].Add(ad.Author);
+                generalAuthors.Add(ad.Author);
+            }
+        }
+
+        return numCoauthorsToCoauthorlist;
+    }
+
+    /// <summary>
+    /// Make edges connect from one datapoint to another based on all of the co-authors of a
+    /// specific author.
+    /// </summary>
+    public static string[] GetTopCoauthors(string selectedAuthor)
+    {
+        if (generalAuthors.Count > 0)
+        {
+            generalAuthors.Clear();
+        }
+
+        List<string> allCoauthors = new List<string>();
+
+        allCoauthors.Add(selectedAuthor);
+        generalAuthors.Add(selectedAuthor);
+
+        //TODO: Might want to do find all articles in the DrawConnectors(List<string> method) to take in a list of authors
+        //Add the main author's articles to the beginning of the list to have connections drawn from his/her
+        //articles to all of neighboring coauthors' articles
+
+        //TODO: Algorithm to find all coauthors from a single author
+        List<string> coauthorsAdjToAuthor = DataProcessor.FindCoauthors(selectedAuthor);
+
+        foreach (string coauthor in coauthorsAdjToAuthor)
+        {
+            generalAuthors.Add(coauthor);
+            allCoauthors.Add(coauthor);
+        }
+
+        //FIXED: Add a condition when one should draw connections and when it shouldn't happen.
+        //TODO: Add a better check of distinct elements in an arraylist or array in order to get the length of
+        //elements within
+        return allCoauthors.Distinct().ToArray();
+    }
+
+    //All Getters and Setters
+    public static List<string> SourceAuthors
+    {
+        get { return algorithmSourceAuthors; }
+        set { algorithmSourceAuthors = value; }
+    }
+
+    public static List<string> DestAuthors
+    {
+        get { return algorithmDestAuthors; }
+        set { algorithmDestAuthors = value; }
+    }
+
+    public static List<string> GeneralAuthors
+    {
+        get { return generalAuthors; }
+        set { generalAuthors = value; }
+    }
+
+    public static List<string> GeneralArticles
+    {
+        get { return generalArticles; }
+        set { generalArticles = value; }
     }
 
     private static int CountHelper(string author, string category)
