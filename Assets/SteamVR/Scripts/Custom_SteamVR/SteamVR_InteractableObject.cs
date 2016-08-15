@@ -207,12 +207,19 @@ public class SteamVR_InteractableObject : MonoBehaviour
         //I KNOW THERE ARE ERRORS HERE, BUT DON'T COMMENT IT UNLESS YOU KNOW YOU DON'T WANT TO MOVE THE OBJECT 
         //IT IS ESSENTIAL FOR GRABBING
         //But, I think I fixed the error that was here, it was a null check
-        if (grabAttatchMechanic == GrabAttatchType.Track_Object && GetComponent<Rigidbody>() != null
+        if (grabAttatchMechanic == GrabAttatchType.Track_Object 
+            && GetComponent<Rigidbody>() != null
             && ((lc != null && lc.GetComponent<SteamVR_LaserPointer>().moving) || (rc != null && rc.GetComponent<SteamVR_LaserPointer>().moving))
             )
         {
 			rb = GetComponent<Rigidbody> ();
             FixedUpdateTrackedObject();
+        } else if (grabAttatchMechanic == GrabAttatchType.Track_Object
+            && GetComponent<Rigidbody2D>() != null
+            && ((lc != null && lc.GetComponent<SteamVR_LaserPointer>().moving) || (rc != null && rc.GetComponent<SteamVR_LaserPointer>().moving))
+            ) {
+                rb2D = GetComponent<Rigidbody2D>();
+                FixedUpdateTrackedObject();
         }
     }
 

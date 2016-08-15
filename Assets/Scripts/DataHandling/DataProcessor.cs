@@ -497,7 +497,7 @@ public static class DataProcessor {
         //articles to all of neighboring coauthors' articles
 
         //TODO: Algorithm to find all coauthors from a single author
-        List<string> coauthorsAdjToAuthor = DataProcessor.FindCoauthors(selectedAuthor);
+        List<string> coauthorsAdjToAuthor = FindCoauthors(selectedAuthor);
 
         foreach (string coauthor in coauthorsAdjToAuthor)
         {

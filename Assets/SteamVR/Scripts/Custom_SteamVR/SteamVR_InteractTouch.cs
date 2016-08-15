@@ -99,7 +99,11 @@ public class SteamVR_InteractTouch : MonoBehaviour
     {
         if (collider.transform.parent.parent)
         {
-            collider.transform.parent.parent.GetComponent<SplineDecorator>().DimSurroundingVisuals(collider.transform.parent);
+            //collider.transform.parent.parent.GetComponent<SplineDecorator>().DimSurroundingVisuals(collider.transform.parent);
+        }
+        if (collider.GetComponent<SplineDecorator>() && collider.GetComponent<SplineDecorator>().dimmed)
+        {
+            collider.GetComponent<SplineDecorator>().Brighten();
         }
         else
         {
@@ -113,7 +117,7 @@ public class SteamVR_InteractTouch : MonoBehaviour
             string catStr;
             if (collider.transform.parent)
             {
-                if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Articles)
+                if (collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Authors)
                 {
                     titleStr = collider.GetComponent<SplineDecorator>().title;
                     catStr = collider.transform.parent.GetComponent<SplineDecorator>().title;
