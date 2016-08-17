@@ -406,7 +406,7 @@ public class DataVisInputs : MonoBehaviour
 
     void DoTouchpadPressed()
     {
-        if (masterGUIHandler.isOnArticle)
+        if (masterGUIHandler.isOnArticle && SteamVR_InteractTouch.controllerOnDatapoint)
         {
             masterGUIHandler.EnableAlgorithm();
         }
@@ -414,9 +414,9 @@ public class DataVisInputs : MonoBehaviour
 
     void DoTouchpadPressed(ControllerInteractionEventArgs e)
     {
-        if (masterGUIHandler.isOnArticle && !calledLoadin)
+        if (masterGUIHandler.isOnArticle && !calledLoadin && SteamVR_InteractTouch.controllerOnDatapoint)
         {
-            masterGUIHandler.EnableAlgorithm();
+            masterGUIHandler.EnableAlgorithm(); //this method should call method inside the Dataprocessor class
             calledLoadin = true;
         }
     }

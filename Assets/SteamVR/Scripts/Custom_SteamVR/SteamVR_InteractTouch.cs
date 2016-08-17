@@ -27,6 +27,7 @@ public class SteamVR_InteractTouch : MonoBehaviour
     [Header("Other References", order = 3)]
     public DataVisInputs dataVisInputs;
     public GUIHandler masterGUIHandler;
+    public static bool controllerOnDatapoint = false;
 
     private int buttonCount = 0;
     private float timePassed;
@@ -52,14 +53,9 @@ public class SteamVR_InteractTouch : MonoBehaviour
         timePassed += Time.deltaTime;
         if (collider.tag == "Datapoint" && timePassed <= cooldown)
         {
-            /*if (this.transform.name == "Controller (left)")
-            {
-                GameObject.Find("Controller (right)").GetComponent<Collider>().enabled = false;
-            }
-            if (this.transform.name == "Controller (right)")
-            {
-                GameObject.Find("Controller (left)").GetComponent<Collider>().enabled = false;
-            }*/
+            //If the touchpad is pressed on the datapoint in this scope, then call the algorithm to create connections.
+            controllerOnDatapoint = true;
+
             dataVisInputs.DoRigidbodyFreeze();
             collider.GetComponent<Renderer>().material.SetColor("_TintColor", Color.green);
             GetComponent<SteamVR_ControllerActions>().TriggerHapticPulse(cooldown, hapticFeedbackStrength); //first parameter is duration (in seconds), second is pressure applied. Max is about 3000
@@ -83,6 +79,7 @@ public class SteamVR_InteractTouch : MonoBehaviour
             dataVisInputs.ButtonCount = buttonCount;
             timePassed = 0;
             hasEnableExpanded = false;
+            controllerOnDatapoint = false;
         }
         else if (collider.tag == "Datapoint")
         {
@@ -91,6 +88,7 @@ public class SteamVR_InteractTouch : MonoBehaviour
             dataVisInputs.ButtonCount = buttonCount;
             timePassed = 0;
             hasEnableExpanded = false;
+            controllerOnDatapoint = false;
         }
 
     }

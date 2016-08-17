@@ -113,9 +113,9 @@ public class GUIHandler : MonoBehaviour {
     public void HighlightConnectionsbyCoauthor(string inputtedAuthor)
     {
         string[] coAuthors = DataProcessor.GetTopCoauthors(inputtedAuthor);
-        if (coAuthors.Length > 1)
+        if (coAuthors.Length > 0)
         {
-            refToSD.DrawConnectors(coAuthors.ToList());
+            refToSD.DrawConnectors(inputtedAuthor, coAuthors.ToList());
         }
         else
         {

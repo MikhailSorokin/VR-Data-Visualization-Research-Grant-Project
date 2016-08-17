@@ -5,6 +5,8 @@ using System.Collections.Generic;
 public class AuthorData {
 
 	public Dictionary<string, int> categoryToNumArticles = new Dictionary<string, int>();
+    public Dictionary<GameObject, List<string>> goLocations = new Dictionary<GameObject, List<string>>();
+
 	private string author;
     private int numberOfCoauthors;
 

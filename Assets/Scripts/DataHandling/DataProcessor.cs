@@ -10,7 +10,8 @@ using UnityEngine;
 public static class DataProcessor {
 
 	public static Dictionary<string, MasterNode> articleContainerDictionary = new Dictionary<string, MasterNode>(); //holding everything you dream of! except for specific Author related things
-	public static List<string> uniqueAuthors = new List<string>();
+    public static Dictionary<string, GameObject[]> authorContainerDictionary = new Dictionary<string, GameObject[]>();
+    public static List<string> uniqueAuthors = new List<string>();
 	public static List<AuthorData> allAuthorData = new List<AuthorData>();
 
 	private static List<MasterNode> tempClusterMasterNodes = new List<MasterNode>();
@@ -54,7 +55,13 @@ public static class DataProcessor {
 
 				//This is for getting individual author information, important for knowing how many articles an article has publichsed within a category
 				foreach (string author in list_node_authors) {
-					if (!uniqueAuthors.Contains (author)) {
+
+                    if (!authorContainerDictionary.ContainsKey(author))
+                    {
+                        authorContainerDictionary[author] = new GameObject[3]; //there should always be a unique article
+                    }
+
+                    if (!uniqueAuthors.Contains (author)) {
 						uniqueAuthors.Add (author);
 						AuthorData ad = new AuthorData (author, categoryOfArticle);
 						ad.UpdateCategory (categoryOfArticle);
@@ -496,7 +503,7 @@ public static class DataProcessor {
         //Add the main author's articles to the beginning of the list to have connections drawn from his/her
         //articles to all of neighboring coauthors' articles
 
-        //TODO: Algorithm to find all coauthors from a single author
+        //DONE: Algorithm to find all coauthors from a single author
         List<string> coauthorsAdjToAuthor = FindCoauthors(selectedAuthor);
 
         foreach (string coauthor in coauthorsAdjToAuthor)
@@ -504,6 +511,47 @@ public static class DataProcessor {
             generalAuthors.Add(coauthor);
             allCoauthors.Add(coauthor);
         }
+
+        //FIXED: Add a condition when one should draw connections and when it shouldn't happen.
+        //TODO: Add a better check of distinct elements in an arraylist or array in order to get the length of
+        //elements within
+        return allCoauthors.Distinct().ToArray();
+    }
+
+    /// <summary>
+    /// Make edges connect from one datapoint to another based on all of the co-authors of a
+    /// specific author.
+    /// </summary>
+    public static string[] GetTopCoauthors(List<string> authorCluster)
+    {
+        if (generalAuthors.Count > 0)
+        {
+            generalAuthors.Clear();
+        }
+
+        List<string> allCoauthors = new List<string>();
+
+        for (int authorInd = 0; authorInd < authorCluster.Count; authorInd++)
+        {
+            allCoauthors.Add(authorCluster[authorInd]);
+            generalAuthors.Add(authorCluster[authorInd]);
+
+            //TODO: Algorithm to find all coauthors from a single author
+            List<string> coauthorsAdjToAuthor = FindCoauthors(authorCluster[authorInd]);
+
+            foreach (string coauthor in coauthorsAdjToAuthor)
+            {
+                generalAuthors.Add(coauthor);
+                allCoauthors.Add(coauthor);
+            }
+        }
+
+
+        //TODO: Might want to do find all articles in the DrawConnectors(List<string> method) to take in a list of authors
+        //Add the main author's articles to the beginning of the list to have connections drawn from his/her
+        //articles to all of neighboring coauthors' articles
+
+
 
         //FIXED: Add a condition when one should draw connections and when it shouldn't happen.
         //TODO: Add a better check of distinct elements in an arraylist or array in order to get the length of
