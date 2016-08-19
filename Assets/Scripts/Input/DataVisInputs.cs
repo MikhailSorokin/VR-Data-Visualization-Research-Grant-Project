@@ -16,6 +16,7 @@ public class DataVisInputs : MonoBehaviour
     [System.Serializable]
     public struct GUIParameters
     {
+        public GameObject bottomGO;
         public GameObject gridImage;
         public Color originalColor;
     }
@@ -38,7 +39,6 @@ public class DataVisInputs : MonoBehaviour
     //Private Variables
     private static GameObject colliderGameObject;
     private static GameObject touchedObject;
-    private GameObject bottomGO;
     private static GameObject dataPointToUse;
     private float distance;
     private SteamVR_TrackedController contrToUse;
@@ -89,7 +89,7 @@ public class DataVisInputs : MonoBehaviour
         //Call all the controller events here
         ControllerManager.Intro += new DoubleControllerInteractionEventHandler(DoSpawnControllerMenuGUIs);
         ControllerManager.RigidbodyFreeze += new DoubleControllerInteractionEventHandler(DoRigidbodyFreeze);
-        //ControllerManager.DoubleControllerGUI += new DoubleControllerInteractionEventHandler(SetUpDoubleControllerGUI);
+        //TODO: ControllerManager.DoubleControllerGUI += new DoubleControllerInteractionEventHandler(SetUpDoubleControllerGUI);
 
         ControllerManager.DoubleTouchpadPressed += new DoubleControllerInteractionEventHandler(TransitionThere);
         ControllerManager.MapDoubleTouchpadPressedToKeyPress += new KeyboardInteractionEventHandler(TransitionThere);
@@ -119,7 +119,6 @@ public class DataVisInputs : MonoBehaviour
         ControllerManager.MapTouchpadAxisChangedToMouseWheel += new MouseInteractionEventHandler(DoMouseWheelChanged);
         ControllerManager.TouchpadAxisChanged += new ControllerInteractionEventHandler(DoTouchPadAxisChanged);
 
-        bottomGO = GameObject.Find("Bottom");
         masterGUIHandler = (GUIHandler)FindObjectOfType(typeof(GUIHandler));
     }
 
@@ -142,8 +141,41 @@ public class DataVisInputs : MonoBehaviour
                 }
             }
         }
+        //Need to Update all AuthorData GO positions
+        foreach (AuthorData authorData in DataProcessor.allAuthorData)
+        {
+            foreach (KeyValuePair<GameObject, List<string>> gameobjectToCoauthorList in authorData.goLocations)
+            {
+                if (gameobjectToCoauthorList.Key != null)
+                {
+                    Transform[] activeGOs = gameobjectToCoauthorList.Key.GetComponent<SplineDecorator>().elements;
+                    foreach (Transform checkActiveGO in activeGOs)
+                    {
+                       
+                        if (checkActiveGO != null && gameobjectToCoauthorList.Key == checkActiveGO.gameObject)
+                        {
+                            ChangeKey(authorData.goLocations, gameobjectToCoauthorList.Key, checkActiveGO.gameObject);
+
+                        }
+                    }
+                }
+            }
+        }
 
         ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().UpdateSplinePos();
+    }
+
+    private bool ChangeKey(Dictionary<GameObject, List<string>> dict,
+                                           GameObject oldKey, GameObject newKey)
+    {
+        List<string> value;
+        Debug.Log(dict.TryGetValue(oldKey, out value));
+        if (!dict.TryGetValue(oldKey, out value))
+            return false;
+
+        dict.Remove(oldKey);  // do not change order
+        dict[newKey] = value;  // or dict.Add(newKey, value) depending on ur comfort
+        return true;
     }
 
     private static Color hexToColor(string hex)
@@ -406,9 +438,10 @@ public class DataVisInputs : MonoBehaviour
 
     void DoTouchpadPressed()
     {
-        if (masterGUIHandler.isOnArticle && SteamVR_InteractTouch.controllerOnDatapoint)
+        if (masterGUIHandler.isOnArticle && !calledLoadin)
         {
             masterGUIHandler.EnableAlgorithm();
+            calledLoadin = true;
         }
     }
 
@@ -423,10 +456,7 @@ public class DataVisInputs : MonoBehaviour
 
     void DoTouchpadReleased()
     {
-        if (masterGUIHandler.isOnArticle)
-        {
-            masterGUIHandler.EnableAlgorithm();
-        }
+        calledLoadin = false;
     }
 
     void DoTouchpadReleased(ControllerInteractionEventArgs e)
@@ -502,7 +532,7 @@ public class DataVisInputs : MonoBehaviour
                 Vector3 tempRectTransform = (guiRectTransform.anchoredPosition3D);
                 GameObject numberButtonsGO = GameObject.Find("Button (" + buttonCount + ")");
                 //FIXED: Don't have a call on GameObject.Find every time this is being called
-                if (tempRectTransform.y >= 0 && numberButtonsGO.transform.position.y < bottomGO.transform.position.y
+                if (tempRectTransform.y >= 0 && numberButtonsGO.transform.position.y < guiParameters.bottomGO.transform.position.y
                     && e.touchpadAxis.normalized.y > 0)
                 {
                     tempRectTransform.y += Time.deltaTime * e.touchpadAxis.normalized.y * 100;

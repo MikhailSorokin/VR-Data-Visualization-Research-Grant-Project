@@ -54,7 +54,11 @@ public class SteamVR_InteractTouch : MonoBehaviour
         if (collider.tag == "Datapoint" && timePassed <= cooldown)
         {
             //If the touchpad is pressed on the datapoint in this scope, then call the algorithm to create connections.
-            controllerOnDatapoint = true;
+            if (masterGUIHandler.isOnArticle && collider.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Singleton)
+            {
+                masterGUIHandler.inputField.text = collider.transform.GetChild(0).GetComponent<TextMesh>().text;
+                controllerOnDatapoint = true;
+            }
 
             dataVisInputs.DoRigidbodyFreeze();
             collider.GetComponent<Renderer>().material.SetColor("_TintColor", Color.green);
@@ -70,10 +74,8 @@ public class SteamVR_InteractTouch : MonoBehaviour
 
     void OnTriggerExit(Collider collider)
     {
-        if (collider.tag == "Datapoint" && !masterGUIHandler.isOnArticle)
+        /*if (collider.tag == "Datapoint" && !masterGUIHandler.isOnArticle)
         {
-            /*GameObject.Find("Controller (left)").GetComponent<Collider>().enabled = true;
-            GameObject.Find("Controller (right)").GetComponent<Collider>().enabled = true;*/
             collider.GetComponent<Renderer>().material.SetColor("_TintColor", Color.white);
             dataVisInputs.AllowExpansion(null, null);
             dataVisInputs.ButtonCount = buttonCount;
@@ -81,7 +83,7 @@ public class SteamVR_InteractTouch : MonoBehaviour
             hasEnableExpanded = false;
             controllerOnDatapoint = false;
         }
-        else if (collider.tag == "Datapoint")
+        else */if (collider.tag == "Datapoint")
         {
             collider.GetComponent<Renderer>().material.SetColor("_TintColor", Color.white);
             dataVisInputs.AllowExpansion(null, null);
@@ -102,10 +104,6 @@ public class SteamVR_InteractTouch : MonoBehaviour
         if (collider.GetComponent<SplineDecorator>() && collider.GetComponent<SplineDecorator>().dimmed)
         {
             collider.GetComponent<SplineDecorator>().Brighten();
-        }
-        else
-        {
-            print("not found");
         }
 
         //The title of the GUI will be updated only when the user is not on the "Input Author" section.

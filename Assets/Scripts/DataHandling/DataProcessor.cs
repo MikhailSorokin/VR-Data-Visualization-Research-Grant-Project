@@ -10,7 +10,6 @@ using UnityEngine;
 public static class DataProcessor {
 
 	public static Dictionary<string, MasterNode> articleContainerDictionary = new Dictionary<string, MasterNode>(); //holding everything you dream of! except for specific Author related things
-    public static Dictionary<string, GameObject[]> authorContainerDictionary = new Dictionary<string, GameObject[]>();
     public static List<string> uniqueAuthors = new List<string>();
 	public static List<AuthorData> allAuthorData = new List<AuthorData>();
 
@@ -55,12 +54,6 @@ public static class DataProcessor {
 
 				//This is for getting individual author information, important for knowing how many articles an article has publichsed within a category
 				foreach (string author in list_node_authors) {
-
-                    if (!authorContainerDictionary.ContainsKey(author))
-                    {
-                        authorContainerDictionary[author] = new GameObject[3]; //there should always be a unique article
-                    }
-
                     if (!uniqueAuthors.Contains (author)) {
 						uniqueAuthors.Add (author);
 						AuthorData ad = new AuthorData (author, categoryOfArticle);
@@ -482,6 +475,23 @@ public static class DataProcessor {
 
         return numCoauthorsToCoauthorlist;
     }
+
+    /// <summary>
+    /// Make edges connect from one datapoint to another based on all of the co-authors of a
+    /// specific author.
+    /// </summary>
+    public static AuthorData[] ConvertListToAD(List<string> coauthorList)
+    {
+        List<AuthorData> coauthorData = new List<AuthorData>();
+
+        for (int coAuthorInd = 0; coAuthorInd < coauthorList.Count; coAuthorInd++)
+        {
+            coauthorData.Add(DataProcessor.GetADFromAuthor(coauthorList[coAuthorInd]));
+        }
+
+        return coauthorData.Distinct().ToArray();
+    }
+
 
     /// <summary>
     /// Make edges connect from one datapoint to another based on all of the co-authors of a

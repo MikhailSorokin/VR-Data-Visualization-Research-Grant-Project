@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// </summary>
 public class MasterNode {
 
-	public const int MAX_LEVELS = 3;
+	public const int MAX_LEVELS = 4;
 
 	private List<string> authors;
 	private string title;
@@ -16,7 +16,6 @@ public class MasterNode {
 	private int year;
 	private string category;
 
-	private GameObject bezierPoint;
 	private GameObject[] bezierPoints = new GameObject[MAX_LEVELS];
 
 	/* Constructor without URL and GameObject.
@@ -72,13 +71,6 @@ public class MasterNode {
 	{
 		get { return category; }
 	}
-
-	/*public GameObject MasterNodeGameObject
-	{
-		get { return bezierPoint; }
-		set { bezierPoint = value; }
-	}*/
-
 
 	//For the current Number of levels, 
 	public GameObject[] MasterNodeGameObjects {
