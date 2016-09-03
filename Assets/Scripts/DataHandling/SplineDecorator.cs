@@ -5,6 +5,9 @@ using UnityEngine.UI;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+//TODO: Connections are drawn, but they need to be updated now
+//I KNOW WHY splines aren't updating! Need to add splines to splineConnList 
+//as it is empty in the UpdateSplinePos method
 public class SplineDecorator : MonoBehaviour
 {
     public BezierSpline spline;
@@ -46,10 +49,8 @@ public class SplineDecorator : MonoBehaviour
     public static GUIHandler masterGUIHandler;
     public bool expanded = false;
     public List<string> DataSetStrings = new List<string>();
-    public const float OG_SIZE = 0.001f;
 
     private bool isMoving;
-
     private Vector3 startLoc;
     private Vector3 endLoc;
     private string[] categories = {
@@ -57,7 +58,6 @@ public class SplineDecorator : MonoBehaviour
         "Data Visualization", "Numerical Analysis", "Scientific Computations", "Programming Languages",
         "Game Development", "Cybersecurity", "Machine Learning", "Networking", "Databases", "Human Computer Interaction"
     };
-
     private static Color[] colorCategory =
     {
         Color.white, Color.green, Color.magenta, Color.red, Color.blue, Color.yellow, Color.cyan,
@@ -65,21 +65,19 @@ public class SplineDecorator : MonoBehaviour
         new Color(60f/255f, 255f/255f, 102f/255f, 255f/255f), new Color(33f/255f, 171f/255f, 205f/255f, 255f/255f), new Color(0f, 0.3f, 255f/255f, 255f/255f), new Color(1f, 0.2f, 0f, 255f/255f),
         new Color(0f/255f, 255f/255f, 128f/255f, 255f/255f), new Color(226f/255f, 182f/255f, 49f/255f, 255f/255f)
     };
-
     private bool propertiesSet = false;
     public bool dimmed = true;
     private int isSphere = 0;
     private bool doOnce = true;
     private bool docking = false;
     private bool dataAdded = false;
-    private bool connectionsDrawn = false;
     private List<MasterNode> loadReady = null;
     private Transform cube;
     public Color textColor = Color.white;
 
     //Connection Constant Information
-    private const float CONN_SCALE = 0.5f;
-    private const int NUM_CONNOBJS = 16;
+    private const float CONN_SCALE = 0.033f;
+    private const int NUM_CONNOBJS = 32;
 
     Dictionary<char, int> alphabetDict = new Dictionary<char, int>();
 
@@ -94,7 +92,6 @@ public class SplineDecorator : MonoBehaviour
 
     // lookup variables from data points
     public Dictionary<Transform, string> dataLookups;
-    private List<Vector3> allPositions = new List<Vector3>();
     public List<BezierSpline> connSplineList = new List<BezierSpline>();
     private string originalLabel = "";
 
@@ -866,17 +863,14 @@ public class SplineDecorator : MonoBehaviour
         }
     }
 
-    private void LoadLinear()
-    {
-
-    }
-
     public void ExpandDataPoint()
     {
+
+        CallAlgorithm();
         if (doOnce)
         {
             doOnce = false;
-            
+
             if (expanded)
             {
                 ContractDataPoint();
@@ -916,8 +910,7 @@ public class SplineDecorator : MonoBehaviour
                 //transform.localScale = transform.localScale * .02f;
                 StartCoroutine(TransitionExpand(nodeList));
             }
-            
-            CallAlgorithm();
+
         }
     }
 
@@ -930,7 +923,7 @@ public class SplineDecorator : MonoBehaviour
             endLoc = transform.localPosition;
 
             StartCoroutine(TransitionContract());
-            CallAlgorithm();
+            //CallAlgorithm();
             expanded = false;
         }
     }
@@ -1056,10 +1049,6 @@ public class SplineDecorator : MonoBehaviour
             {
                 GameObject.Find("MasterGUIHandler").GetComponent<GUIHandler>().HighlightConnectionsbyCoauthor(masterGUIHandler.mostRecentInput); //FIXED: Don't hardcode the author, use what is selected from the author.
             }
-            else
-            {
-                GameObject.Find("MasterGUIHandler").GetComponent<GUIHandler>().HighlightConnectionsbyCoauthor();
-            }
         }
     }
 
@@ -1155,8 +1144,6 @@ public class SplineDecorator : MonoBehaviour
 
             BrightenChildren();
         }
-        
-
     }
 
     public void BrightenChildren()
@@ -1168,88 +1155,6 @@ public class SplineDecorator : MonoBehaviour
                 elements[i].GetComponent<SplineDecorator>().Brighten();
             }
         }
-    }
-
-    /// <summary>
-    /// This method will be for all articles in the dictionary, as it notifies of a relationship between all articles within the current graph.
-    /// It will be used to detect author profile relationships.
-    /// </summary>
-    public void DrawConnectors(string sourceAuthor, List<string> knownCoauthors)
-    {
-        GameObject lastValidGO = null;
-        GameObject sourceGO = null, destGO = null;
-        Color colorToUse = colorCategory[0];
-        int num = 0;
-        colorToUse = colorCategory[num % colorCategory.Length];
-
-        for (int authorIndex = 0; authorIndex < knownCoauthors.Count - 1; authorIndex++)
-        {
-            Debug.Log("Source: " + "(" + authorIndex + ") " + knownCoauthors[authorIndex]);
-            Debug.Log("Dest: " + "(" + authorIndex + ") " + knownCoauthors[authorIndex + 1]);
-            //coauthorCount += DataProcessor.articleContainerDictionary[sourceArticle].Authors.Count;
-            GameObject[] sourceDatapoints = DataProcessor.articleContainerDictionary[knownCoauthors[authorIndex]].MasterNodeGameObjects;
-
-            foreach (GameObject sourceDatapoint in sourceDatapoints)
-            {
-                if (sourceDatapoint != null)
-                {
-                    lastValidGO = sourceDatapoint;
-                }
-            }
-
-            sourceGO = lastValidGO;
-            sourceGO.GetComponent<Renderer>().material.SetColor("_EmissionColor", colorToUse);
-            Vector3 sourcePos = sourceGO.transform.localPosition;
-            Vector3 worldSourcePos = sourceGO.transform.TransformPoint(sourcePos);
-
-            //coauthorCount += DataProcessor.articleContainerDictionary[sourceArticle].Authors.Count;
-            GameObject[] destDatapoints = DataProcessor.articleContainerDictionary[knownCoauthors[authorIndex + 1]].MasterNodeGameObjects;
-
-            foreach (GameObject destDatapoint in destDatapoints)
-            {
-                if (destDatapoint != null)
-                {
-                    lastValidGO = destDatapoint;
-                }
-            }
-
-            destGO = lastValidGO;
-            destGO.GetComponent<Renderer>().material.SetColor("_EmissionColor", colorToUse);
-            Vector3 destPos = destGO.transform.localPosition;
-            Vector3 worldDestPos = destGO.transform.TransformPoint(destPos);
-
-            Vector3 menuSource = GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldSourcePos);
-
-            //Debug.Log("Source Count: " + sourceTest + ", Dest Count: " + destTest);
-
-            Transform connTrans = Instantiate(connector) as Transform;
-            connTrans.transform.rotation = GameObject.FindGameObjectWithTag("Menu").transform.localRotation;
-            //Might need this later. print("rotation here: " + connTrans.transform.rotation.ToString());
-            connector.GetComponent<BezierSpline>().source = sourceGO.transform;
-            connector.GetComponent<BezierSpline>().destination = destGO.transform;
-            connTrans.parent = GameObject.FindGameObjectWithTag("Menu").transform;
-            connTrans.parent.GetComponent<SplineDecorator>().connSplineList.Add(connTrans.GetComponent<BezierSpline>());
-
-            BezierSpline connSpline = connTrans.GetComponent<BezierSpline>();
-
-            Vector3 menuDest =
-            GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldDestPos);
-
-            connTrans.transform.localPosition = Vector3.zero;
-            connSpline.points[0] = menuSource;
-            Vector3 mp1 = menuSource / 2;
-            connSpline.points[1] = mp1;
-            Vector3 mp2 = menuDest / 2;
-            connSpline.points[2] = mp2;
-
-            //set end position
-            connSpline.points[3] = menuDest;
-
-            LoadConnectors(connSpline, colorToUse, NUM_CONNOBJS);
-
-            num++;
-        }
-
     }
 
     public void CleanConnections()
@@ -1279,105 +1184,6 @@ public class SplineDecorator : MonoBehaviour
 
     }
 
-    /// <summary>
-    /// This method will be for all articles in the dictionary, as it notifies of a relationship between all articles within the current graph.
-    /// It will be used to detect author profile relationships.
-    /// </summary>
-    public void DrawConnectors(Dictionary<int, List<string>> numCoauthorsToCoauthorlist)
-    {
-        GameObject lastValidGO = null;
-        Color sameColorForBoth = colorCategory[0];
-        GameObject sourceGO = null;
-
-        foreach (int num in numCoauthorsToCoauthorlist.Keys)
-        {
-            sameColorForBoth = colorCategory[num % colorCategory.Length];
-            for (int articlePos = 0; articlePos < numCoauthorsToCoauthorlist[num].Count - 1; articlePos++)
-            {
-                Debug.Log("Author: " + numCoauthorsToCoauthorlist[num][articlePos] +
-                ", Adjacent Author: " + numCoauthorsToCoauthorlist[num][articlePos + 1]);
-                List<string> sourceArticles = DataProcessor.AllArticlesFromAuthor(numCoauthorsToCoauthorlist[num][articlePos]);
-
-                foreach (string sourceArticle in sourceArticles)
-                {
-                    GameObject[] sourceDatapoints = DataProcessor.articleContainerDictionary[sourceArticle].MasterNodeGameObjects;
-
-                    foreach (GameObject sourceDatapoint in sourceDatapoints)
-                    {
-                        if (sourceDatapoint != null)
-                        {
-                            lastValidGO = sourceDatapoint;
-                            sourceGO = sourceDatapoint;
-                        }
-                    }
-
-                    lastValidGO.GetComponent<Renderer>().material.SetColor("_TintColor", sameColorForBoth);
-                    Vector3 sourcePos = lastValidGO.transform.localPosition;
-                    Vector3 worldSourcePos = lastValidGO.transform.TransformPoint(sourcePos);
-
-                    List<string> destArticles = DataProcessor.AllArticlesFromAuthor(numCoauthorsToCoauthorlist[num][articlePos + 1]); //this is the adjacent article in the list
-                    foreach (string destArticle in destArticles)
-                    {
-
-                        if (sourceArticle != destArticle)
-                        {
-                            GameObject[] destDataPoints = DataProcessor.articleContainerDictionary[destArticle].MasterNodeGameObjects;
-
-                            foreach (GameObject destDataPoint in destDataPoints)
-                            {
-                                if (destDataPoint != null)
-                                {
-                                    lastValidGO = destDataPoint;
-                                }
-                            }
-
-                            //if (destDataPoints[0] != null && destDataPoints[0].transform.parent.GetComponent<SplineDecorator>())
-                            //    destDataPoints[0].transform.parent.GetComponent<SplineDecorator>().Brighten();
-
-                            lastValidGO.GetComponent<Renderer>().material.SetColor("_TintColor", sameColorForBoth);
-                            Vector3 destPos = lastValidGO.transform.localPosition;
-                            Vector3 worldDestPos = lastValidGO.transform.TransformPoint(destPos);
-                            
-                            //allPositions.Add(worldSourcePos);
-                            //allPositions.Add(worldDestPos);
-
-                            Vector3 menuSource =
-                                GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldSourcePos);
-
-                            if (!connectionsDrawn)
-                            {
-                                //connectionsDrawn = true;
-                                Transform connTrans = Instantiate(connector) as Transform;
-                                connector.GetComponent<BezierSpline>().source = sourceGO.transform;
-                                connector.GetComponent<BezierSpline>().destination = lastValidGO.transform;
-                                connTrans.parent = GameObject.FindGameObjectWithTag("Menu").transform;
-                                connTrans.parent.GetComponent<SplineDecorator>().connSplineList.Add(connTrans.GetComponent<BezierSpline>());
-                                BezierSpline connSpline = connTrans.GetComponent<BezierSpline>();
-
-                                Vector3 menuDest =
-                                GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldDestPos);
-
-                                connTrans.transform.localPosition = Vector3.zero;
-                                connSpline.points[0] = menuSource;
-                                Vector3 mp1 = menuSource / 2;
-                                connSpline.points[1] = mp1;
-                                Vector3 mp2 = menuDest / 2;
-                                connSpline.points[2] = mp2;
-
-                                //set end position
-                                connSpline.points[3] = menuDest;
-
-                                LoadConnectors(connSpline, sameColorForBoth, NUM_CONNOBJS);
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
     public void UpdateSplinePos()
     {
         foreach (BezierSpline item in connSplineList)
@@ -1386,6 +1192,8 @@ public class SplineDecorator : MonoBehaviour
             LoadConnectors(item);
         }
     }
+
+    //Need to set the positions here to be internal, going inside the ring of the 
 
     /// <summary>
     /// This method will be for all articles in the dictionary, as it notifies of a relationship between all articles within the current graph.
@@ -1400,9 +1208,11 @@ public class SplineDecorator : MonoBehaviour
         Vector3 sourcePos = Vector3.zero, worldSourcePos = Vector3.zero;
         Vector3 destPos = Vector3.zero, worldDestPos = Vector3.zero;
 
+        //Debug.Log(coAuthors.Length);
         for (int coauthorIndex = 0; coauthorIndex < coAuthors.Length; coauthorIndex++)
         {
             List<GameObject> coauthorGOLocations = (List<GameObject>)coAuthors[coauthorIndex].goLocations.Keys.ToList();
+            //Debug.Log("Coauthor GO count: " + coauthorGOLocations.Count);
             for (int coauthorGOLocInd = 0; coauthorGOLocInd < coauthorGOLocations.Count; coauthorGOLocInd++)
             {
                 if (!sourceGO.GetComponent<SplineDecorator>().expanded &&
@@ -1415,7 +1225,7 @@ public class SplineDecorator : MonoBehaviour
                     destGO = coauthorGOLocations[coauthorGOLocInd];
                     if (sourceGO != destGO)
                     {
-                        destGO.GetComponent<Renderer>().material.SetColor("_EmissionColor", connectionSplineColor);
+                        destGO.GetComponent<Renderer>().material.SetColor("_EmissionColor ", connectionSplineColor);
                         destPos = destGO.transform.localPosition;
                         worldDestPos = destGO.transform.TransformPoint(destPos);
 
@@ -1424,36 +1234,35 @@ public class SplineDecorator : MonoBehaviour
 
                         Transform connTrans = Instantiate(connector) as Transform;
                         connTrans.transform.rotation = GameObject.FindGameObjectWithTag("Menu").transform.localRotation;
-                        //Might need this later. print("rotation here: " + connTrans.transform.rotation.ToString());
+
                         connector.GetComponent<BezierSpline>().source = sourceGO.transform;
                         connector.GetComponent<BezierSpline>().destination = destGO.transform;
-                        connTrans.parent = GameObject.FindGameObjectWithTag("Menu").transform;
-                        connTrans.parent.GetComponent<SplineDecorator>().connSplineList.Add(connTrans.GetComponent<BezierSpline>());
-
+                        //Need to add a different parent to this transform
                         BezierSpline connSpline = connTrans.GetComponent<BezierSpline>();
+
+                        connTrans.parent = GameObject.FindGameObjectWithTag("Menu").transform;
+                        connTrans.parent.GetComponent<SplineDecorator>().connSplineList.Add(connSpline);
 
                         Vector3 menuDest =
                         GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldDestPos);
 
-                        connTrans.transform.localPosition = Vector3.zero;
-                        connSpline.points[0] = menuSource;
-                        Vector3 mp1 = menuSource / 2;
-                        connSpline.points[1] = mp1;
-                        Vector3 mp2 = menuDest / 2;
-                        connSpline.points[2] = mp2;
+                        //Debug.Log("Source Position: " + sourcePos);
+                        //Debug.Log("Dest Position: " + destPos);
 
-                        //set end position
+                        connTrans.transform.localPosition = Vector3.zero;
+
+                        connSpline.points[0] = menuSource;
+                        connSpline.points[1] = menuSource / 2;
+                        connSpline.points[2] = menuDest / 2;
                         connSpline.points[3] = menuDest;
 
-                        LoadConnectors(connSpline, connectionSplineColor, NUM_CONNOBJS, coAuthors.Length);
+                        LoadConnectors(connSpline, connectionSplineColor);
 
-                        //Then set sourceGO to destGO
                         sourceGO = destGO;
                         destGO = null;
                     }
                 }
             }
-
         }
     }
 
@@ -1461,21 +1270,20 @@ public class SplineDecorator : MonoBehaviour
     {
         if (splineConn.source != null && splineConn.destination != null)
         {
-        
+
             Vector3 worldSourcePos = splineConn.source.position;
             Vector3 worldDestPos = splineConn.destination.position;
             Vector3 menuSource =
                         GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldSourcePos);
             Vector3 menuDest =
                         GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldDestPos);
+            //Setting start position
+
             splineConn.points[0] = menuSource;
-            Vector3 mp1 = menuSource / 2;
-            splineConn.points[1] = mp1;
-
-            Vector3 mp2 = menuDest / 2;
-            splineConn.points[2] = mp2;
-
-            //set end position
+            //Setting halfway points between source and dest
+            splineConn.points[1] = menuSource/2;
+            splineConn.points[2] = menuDest/2;
+            //Set end position
             splineConn.points[3] = menuDest;
 
             float stepSize = 1f / (NUM_CONNOBJS);
@@ -1487,44 +1295,32 @@ public class SplineDecorator : MonoBehaviour
                     {
                         Transform item = splineConn.transform.GetChild(f);
                         Vector3 position = splineConn.GetPoint(p * stepSize);
+                        //This was localposition before lawl
                         item.transform.position = position;
 
                         item.transform.LookAt(position + splineConn.GetDirection(p * stepSize));
+
+                        Vector3 vel = splineConn.GetVelocity(p * stepSize);
+                        item.localScale = new Vector3(item.transform.localScale.x, item.transform.localScale.y, vel.magnitude * CONN_SCALE);
                     }
                 }
             }
-
         }
     }
-    
-    private void LoadConnectors(BezierSpline splineConn, Color splineColor, int freq)
+
+    private void LoadConnectors(BezierSpline splineConn, Color splineColor)
     {
-        float stepSize = 1f / (freq);
-        for (int p = 0, f = 0; f < freq; f++)
+        float stepSize = 1f / (NUM_CONNOBJS);
+        for (int p = 0, f = 0; f < NUM_CONNOBJS; f++)
         {
             for (int i = 0; i < connectGuide.Length; i++, p++)
             {
+                //Why is the "splineConn.transform.childCount" part in the if statement needed?
+                //NVM only needed in the LoadConnectors overloaded method that only takes in one param
+                //Debug.Log("Child Count: " + splineConn.transform.childCount);
                 Transform item = Instantiate(connectGuide[i]);
                 item.gameObject.GetComponentInChildren<Renderer>().material.SetColor("_EmissionColor", splineColor);
-                Vector3 position = splineConn.GetPoint(p * stepSize);
-                item.transform.localPosition = position;
 
-                item.transform.LookAt(position + splineConn.GetDirection(p * stepSize));
-
-                item.transform.parent = splineConn.transform;
-            }
-        }
-    }
-    
-    private void LoadConnectors(BezierSpline splineConn, Color splineColor, int freq, int scaleNumber)
-    {
-        float stepSize = 1f / (freq);
-        for (int p = 0, f = 0; f < freq; f++)
-        {
-            for (int i = 0; i < connectGuide.Length; i++, p++)
-            {
-                Transform item = Instantiate(connectGuide[i]);
-                item.gameObject.GetComponentInChildren<Renderer>().material.SetColor("_EmissionColor", splineColor);
                 Vector3 position = splineConn.GetPoint(p * stepSize);
                 item.transform.localPosition = position;
 
@@ -1532,90 +1328,10 @@ public class SplineDecorator : MonoBehaviour
 
                 item.transform.parent = splineConn.transform;
 
-                Vector3 tempScale = item.transform.localScale;
-                tempScale.x *= CONN_SCALE * scaleNumber * GameObject.FindGameObjectWithTag("Menu").transform.lossyScale.x;
-                tempScale.y *= CONN_SCALE * scaleNumber * GameObject.FindGameObjectWithTag("Menu").transform.lossyScale.y;
-                tempScale.z *= GameObject.FindGameObjectWithTag("Menu").transform.lossyScale.z;
-                item.transform.localScale = tempScale;
+                Vector3 vel = splineConn.GetVelocity(p * stepSize);
+                item.localScale = new Vector3(item.transform.localScale.x, item.transform.localScale.y, vel.magnitude * CONN_SCALE);
             }
         }
-
-    }
-
-    /// <summary>
-    /// This method will be for all articles in the dictionary, as it notifies of a relationship between all articles within the current graph.
-    /// It will be used to detect author profile relationships.
-    /// </summary>
-    private void DrawConnectors(List<AuthorData> sourceADs, List<AuthorData> destADs, string inputCategory, string category)
-    {
-        GameObject lastValidGO = null;
-
-        List<string> sourceAuthors = new List<string>();
-        List<string> destAuthors = new List<string>();
-
-        foreach (AuthorData sourceAD in sourceADs)
-        {
-
-            List<string> sourceArticles = DataProcessor.AllArticlesFromAuthor(sourceAD.Author, inputCategory);
-            foreach (string sourceArticle in sourceArticles)
-            {
-
-                GameObject[] sourceDatapoints = DataProcessor.articleContainerDictionary[sourceArticle].MasterNodeGameObjects;
-
-                foreach (AuthorData destAD in destADs)
-                {
-                    if (sourceAD.Author != destAD.Author)
-                    {
-                        foreach (GameObject sourceDataPoint in sourceDatapoints)
-                        {
-                            if (sourceDataPoint != null)
-                            {
-                                sourceDataPoint.GetComponent<Renderer>().material.SetColor("_TintColor", Color.yellow);
-                                lastValidGO = sourceDataPoint;
-                            }
-                        }
-                        //if (sourceDatapoints[0])
-                        //if (sourceDatapoints[0].transform.parent.GetComponent<SplineDecorator>())
-                        //	sourceDatapoints[0].transform.parent.GetComponent<SplineDecorator>().Brighten ();
-
-                        Vector3 sourcePos = lastValidGO.transform.localPosition;
-                        Vector3 worldSourcePos = lastValidGO.transform.TransformPoint(sourcePos);
-
-                        sourceAuthors.Add(sourceAD.Author);
-                        destAuthors.Add(destAD.Author);
-
-                        List<string> destArticles = DataProcessor.AllArticlesFromAuthor(destAD.Author, category);
-                        foreach (string destArticle in destArticles)
-                        {
-
-                            if (sourceArticle != destArticle)
-                            {
-                                GameObject[] destDataPoints = DataProcessor.articleContainerDictionary[destArticle].MasterNodeGameObjects;
-
-                                foreach (GameObject destDataPoint in destDataPoints)
-                                {
-                                    if (destDataPoint != null)
-                                    {
-                                        destDataPoint.GetComponent<Renderer>().material.SetColor("_TintColor", Color.red);
-                                        lastValidGO = destDataPoint;
-                                    }
-                                }
-                                //if (destDataPoints[0])
-                                //    if (destDataPoints[0].transform.parent.GetComponent<SplineDecorator>())
-                                //        destDataPoints[0].transform.parent.GetComponent<SplineDecorator>().Brighten();
-
-                                Vector3 destPos = lastValidGO.transform.localPosition;
-                                Vector3 worldDestPos = lastValidGO.transform.TransformPoint(destPos);
-
-                                allPositions.Add(worldSourcePos);
-                                allPositions.Add(worldDestPos);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     public void Clean()

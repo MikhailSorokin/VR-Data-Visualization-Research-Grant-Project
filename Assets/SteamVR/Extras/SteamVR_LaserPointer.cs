@@ -193,11 +193,17 @@ public class SteamVR_LaserPointer : MonoBehaviour
             //
             if (IsObjectInteractable(touchedObject))
             {
-                GameObject.Find("Controller (left)").GetComponent<SteamVR_LaserPointer>().enabled = true;
-                GameObject.Find("Controller (left)").GetComponent<SteamVR_LaserPointer>().pointer.GetComponent<MeshRenderer>().material.color = Color.white;
+                if (ControllerManager.leftController != null && ControllerManager.leftController.name == "Controller (left)")
+                {
+                    GameObject.Find("Controller (left)").GetComponent<SteamVR_LaserPointer>().enabled = true;
+                    GameObject.Find("Controller (left)").GetComponent<SteamVR_LaserPointer>().pointer.GetComponent<MeshRenderer>().material.color = Color.white;
+                }
 
-                GameObject.Find("Controller (right)").GetComponent<SteamVR_LaserPointer>().enabled = true;
-                GameObject.Find("Controller (right)").GetComponent<SteamVR_LaserPointer>().pointer.GetComponent<MeshRenderer>().material.color = Color.white;
+                if (ControllerManager.rightController != null && ControllerManager.rightController.name == "Controller (right)")
+                {
+                    GameObject.Find("Controller (right)").GetComponent<SteamVR_LaserPointer>().enabled = true;
+                    GameObject.Find("Controller (right)").GetComponent<SteamVR_LaserPointer>().pointer.GetComponent<MeshRenderer>().material.color = Color.white;
+                }
 
                 moving = false;
                 OnPointerOut(SetPointerInteractEvent(touchedObject, args.distance, args.flags));

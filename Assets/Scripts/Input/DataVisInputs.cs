@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using HandControlllerInputs;
+using UnityEngine.UI;
 
+//TODO: Connections are drawn, but they need to be updated now
 public class DataVisInputs : MonoBehaviour
 {
 
@@ -34,7 +36,8 @@ public class DataVisInputs : MonoBehaviour
     public DataReadParameters dataReadParameters;
     public GUIParameters guiParameters;
     public TransitionParameters transitionParameters;
-    public Camera cam;
+    public float rotationSpeed = 500.0f;
+    public bool usingMouse = false;
 
     //Private Variables
     private static GameObject colliderGameObject;
@@ -63,6 +66,8 @@ public class DataVisInputs : MonoBehaviour
     //This is when both triggers are pressed
     private float controllerDistance = 0.0f;
     private Vector3 lScale = Vector3.zero;
+    private float timePassed;
+    private Transform objectHit;
 
     private float bothControllerDistance = 0.0f;
     private Vector3 leftControllerScale = Vector3.zero;
@@ -78,6 +83,7 @@ public class DataVisInputs : MonoBehaviour
     private float rightAnchorPosX;
     private float rightOriginalScaleX;
     private float rightEndScaleX;
+    private Camera cam;
 
     void Start()
     {
@@ -89,14 +95,11 @@ public class DataVisInputs : MonoBehaviour
         //Call all the controller events here
         ControllerManager.Intro += new DoubleControllerInteractionEventHandler(DoSpawnControllerMenuGUIs);
         ControllerManager.RigidbodyFreeze += new DoubleControllerInteractionEventHandler(DoRigidbodyFreeze);
-        //TODO: ControllerManager.DoubleControllerGUI += new DoubleControllerInteractionEventHandler(SetUpDoubleControllerGUI);
+        //ControllerManager.DoubleControllerGUI += new DoubleControllerInteractionEventHandler(SetUpDoubleControllerGUI);
 
         ControllerManager.DoubleTouchpadPressed += new DoubleControllerInteractionEventHandler(TransitionThere);
-        ControllerManager.MapDoubleTouchpadPressedToKeyPress += new KeyboardInteractionEventHandler(TransitionThere);
         ControllerManager.DoubleTouchpadReleased += new DoubleControllerInteractionEventHandler(NoTransitions);
-        ControllerManager.MapDoubleTouchpadReleasedToKeyPress += new KeyboardInteractionEventHandler(NoTransitions);
 
-        //TODO: Need to fix scaling with connections as the connections' scale appear messed up.
         ControllerManager.DoubleTriggerPressed += new DoubleControllerInteractionEventHandler(ScaleUp);
         ControllerManager.DoubleTriggerReleased += new DoubleControllerInteractionEventHandler(StopScale);
 
@@ -113,17 +116,24 @@ public class DataVisInputs : MonoBehaviour
         ControllerManager.TouchpadReleased += new ControllerInteractionEventHandler(DoTouchpadReleased);
         ControllerManager.MapTouchpadReleaseToKeyRelease += new KeyboardInteractionEventHandler(DoTouchpadReleased);
 
-        //Menu Does not need any special interactions with the keyboard
         ControllerManager.MenuReleased += new ControllerInteractionEventHandler(DoMenuReleased);
 
-        ControllerManager.MapTouchpadAxisChangedToMouseWheel += new MouseInteractionEventHandler(DoMouseWheelChanged);
+        ControllerManager.MapTouchpadAxisChangedToArrowKeys += new MultiKeyInteractionEventHandler(DoChangeOnKeyboardInput);
         ControllerManager.TouchpadAxisChanged += new ControllerInteractionEventHandler(DoTouchPadAxisChanged);
 
         masterGUIHandler = (GUIHandler)FindObjectOfType(typeof(GUIHandler));
+
+        if (GameObject.Find("MainCamera") != null)
+        {
+            cam = GameObject.Find("MainCamera").gameObject.GetComponent<Camera>();
+        }
     }
 
     void Update()
     {
+        if (usingMouse) 
+            UseMouseEvents();
+
         foreach (KeyValuePair<string, MasterNode> articleToMasterNode in DataProcessor.articleContainerDictionary)
         {
             for (int levelIndex = 0; levelIndex < articleToMasterNode.Value.MasterNodeGameObjects.Length; levelIndex++)
@@ -163,6 +173,71 @@ public class DataVisInputs : MonoBehaviour
         }
 
         ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().UpdateSplinePos();
+    }
+
+    private void UseMouseEvents()
+    {
+        RaycastHit hitInfo = new RaycastHit();
+        bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
+        if (hit)
+        {
+            if (hitInfo.transform.gameObject.tag == "Datapoint")
+            {
+                if (hitInfo.transform.GetComponent<SplineDecorator>())
+                {
+
+                    hitInfo.transform.parent.parent.GetComponent<SplineDecorator>().DimSurroundingVisuals(hitInfo.transform.parent);
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            if (cam != null) 
+                cam.transform.position += cam.transform.right;
+        }
+
+        if (hit)
+        {
+            if (hitInfo.transform.gameObject.tag == "Datapoint")
+            {
+                hitInfo.transform.gameObject.GetComponent<Renderer>().material.SetColor("_TintColor", Color.green);
+                EnableForExpand(hitInfo.transform);
+                objectHit = hitInfo.transform;
+            }
+        }
+        else
+        {
+            if (objectHit)
+            {
+                objectHit.GetComponent<Renderer>().material.SetColor("_TintColor", Color.white);
+                objectHit = null;
+            }
+        }
+
+        if (Input.GetMouseButtonDown(0) && Input.GetAxis("Mouse X") == 0 && Input.GetAxis("Mouse Y") == 0)
+        {
+
+            if (hit)
+            {
+                Debug.Log("Hit " + hitInfo.transform.gameObject.name);
+                if (hitInfo.transform.gameObject.tag == "Datapoint")
+                {
+                    //DoRigidbodyFreeze();
+                    if (hitInfo.transform.GetComponent<SplineDecorator>())
+                        hitInfo.transform.GetComponent<SplineDecorator>().ExpandDataPoint();
+                }
+                else if (hitInfo.transform.GetComponent<TextMesh>())
+                {
+                    print("here");
+                    hitInfo.transform.parent.GetComponent<SplineDecorator>().ExpandDataPoint();
+                }
+                else
+                {
+                    Debug.Log("nopz");
+                }
+            }
+        }
     }
 
     private bool ChangeKey(Dictionary<GameObject, List<string>> dict,
@@ -470,7 +545,6 @@ public class DataVisInputs : MonoBehaviour
         {
             dataPointToUse.GetComponent<SplineDecorator>().ExpandDataPoint();
         }
-
     }
 
     void DoTriggerReleased(ControllerInteractionEventArgs e)
@@ -484,7 +558,7 @@ public class DataVisInputs : MonoBehaviour
         ToggleMenu(e);
     }
 
-    void DoMouseWheelChanged()
+    void DoChangeOnKeyboardInput(KeyboardInteractionEventArgs e)
     {
         //TODO: Somehow implement GUI with MouseWheel
         dataReadParameters.rotators = ControllerManager.refToMainSplineGO.GetComponentsInChildren<SplineDecorator>();
@@ -492,7 +566,7 @@ public class DataVisInputs : MonoBehaviour
         //Reason we start at 1 is because 0 is the parent gameobject
         for (int i = 1; i < dataReadParameters.rotators.Length; i++)
         {
-            dataReadParameters.rotators[i].transform.Rotate(0, 0, 500f * Input.mouseScrollDelta.y * Time.deltaTime);
+            dataReadParameters.rotators[i].transform.Rotate(0, 0, rotationSpeed * e.direction * Time.deltaTime);
         }
 
         if (masterGUIHandler.calledConnectionInfo && masterGUIHandler.isOnArticle)
@@ -532,7 +606,7 @@ public class DataVisInputs : MonoBehaviour
                 Vector3 tempRectTransform = (guiRectTransform.anchoredPosition3D);
                 GameObject numberButtonsGO = GameObject.Find("Button (" + buttonCount + ")");
                 //FIXED: Don't have a call on GameObject.Find every time this is being called
-                if (tempRectTransform.y >= 0 && numberButtonsGO.transform.position.y < guiParameters.bottomGO.transform.position.y
+                if (tempRectTransform.y >= 0 && numberButtonsGO != null && numberButtonsGO.transform.position.y < guiParameters.bottomGO.transform.position.y
                     && e.touchpadAxis.normalized.y > 0)
                 {
                     tempRectTransform.y += Time.deltaTime * e.touchpadAxis.normalized.y * 100;
@@ -587,6 +661,79 @@ public class DataVisInputs : MonoBehaviour
     }
 
     /*----------------------------------------------------Everything below is a helper function, used in this class, and others.-------------------------------------------------*/
+    private void EnableForExpand(Transform hitObj)
+    {
+        if (hitObj.parent.parent)
+        {
+            hitObj.parent.parent.GetComponent<SplineDecorator>().DimSurroundingVisuals(hitObj.parent);
+        }
+        else
+        {
+            print("not found");
+        }
+        string titleStr;
+        string catStr;
+        if (hitObj.parent)
+        {
+            if (hitObj.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Categories)
+            {
+                titleStr = hitObj.GetComponent<SplineDecorator>().title;
+                catStr = hitObj.transform.parent.parent.GetComponent<SplineDecorator>().title;
+            }
+            else if (hitObj.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Singleton)
+            {
+                titleStr = hitObj.GetComponent<SplineDecorator>().title;
+                catStr = "Article";
+            }
+            else if (hitObj.GetComponent<SplineDecorator>().datasetCategory == SplineDecorator.DatasetCategory.Years)
+            {
+                titleStr = hitObj.GetComponent<SplineDecorator>().title;
+                catStr = hitObj.transform.parent.GetComponent<SplineDecorator>().title;
+            }
+            else
+            {
+                titleStr = "err";
+                catStr = "cat err";
+            }
+        }
+        else
+        {
+            titleStr = hitObj.GetComponent<SplineDecorator>().title;
+            catStr = "DBPL";
+        }
+        //string str = collider.GetComponent<SplineDecorator> ().DataSetStrings [0];
+
+        Transform gridImage = GameObject.FindGameObjectWithTag("Grid Image").transform;
+
+        int breakPoint = hitObj.GetComponent<SplineDecorator>().DataSetStrings.Count;
+
+        Button button = null;
+        buttonCount = 0;
+        ResetGridImage();
+
+        masterGUIHandler.DestroyButtons();
+
+        for (int i = 0; i < breakPoint; i++)
+        {
+            buttonCount++;
+
+            button = Instantiate(masterGUIHandler.MenuButton);
+            button.transform.GetChild(0).GetComponent<Text>().text = hitObj.GetComponent<SplineDecorator>().DataSetStrings[i];
+            /* This will retain local orientation and scale rather than world orientation and scale, which can prevent
+             * common UI scaling issues.*/
+            button.transform.SetParent(gridImage, false); //originally, this was button.transform.parent = gridImage;
+            button.transform.localScale = Vector3.one;
+            button.transform.name = "Button (" + buttonCount + ")";
+
+        }
+
+        masterGUIHandler.SetTitle(catStr + " - " + titleStr);
+
+        //TODO: Don't pass in buttonCount here as it can just be done from the ButtonCount getter/setter
+        AllowExpansion(hitObj.gameObject, this.gameObject.GetComponent<SteamVR_TrackedController>());
+        ButtonCount = buttonCount;
+    }
+
     public int ButtonCount
     {
         get { return buttonCount; }

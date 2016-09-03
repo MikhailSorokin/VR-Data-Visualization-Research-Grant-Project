@@ -16,7 +16,7 @@ public class SteamVR_InteractTouch : MonoBehaviour
 {
 
     [Header("Collider Properties", order = 1)]
-    public float colliderRadius = 0.05f;
+    public float colliderRadius = 0.005f;
     public Vector3 centerOffsetVector = new Vector3(0.005f, -0.03f, 0.01f);
     public bool triggerStatus = true;
 

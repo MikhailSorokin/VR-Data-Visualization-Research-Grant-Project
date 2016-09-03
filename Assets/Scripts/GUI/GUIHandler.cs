@@ -66,10 +66,6 @@ public class GUIHandler : MonoBehaviour {
         {
             HighlightConnectionsbyCoauthor(inputField.text);
         }
-        else
-        {
-            HighlightConnectionsbyCoauthor();
-        }
     }
 
 	private void XmlScriptCall()
@@ -89,10 +85,10 @@ public class GUIHandler : MonoBehaviour {
     /// </summary>
     private void SwitchGUIDisplay()
 	{
-		/*GUIs [0].GetComponent<Canvas> ().worldCamera = null;
+		/* GUIs [0].GetComponent<Canvas> ().worldCamera = null;
 		GUIs [0].gameObject.SetActive(false);
         GUIs [1].GetComponent<Canvas>().worldCamera = null;
-        GUIs [1].gameObject.SetActive(false);*/
+        GUIs [1].gameObject.SetActive(false); */
         GUIs [2].gameObject.SetActive(true);
 		GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("Controller UI Camera").GetComponent<Camera>();
 		//ActiveUI = GUIs [1];
@@ -101,26 +97,6 @@ public class GUIHandler : MonoBehaviour {
 	public void SetTitle(string title) {
 		inputField.text = title;
 	}
-
-    public void HighlightConnectionsbyCoauthor()
-    {
-        Dictionary<int, List<string>> numCoauthorsToCoauthorList = DataProcessor.GetTopCoauthors();
-        if (numCoauthorsToCoauthorList.Count > 1)
-        {
-            refToSD.DrawConnectors(numCoauthorsToCoauthorList);
-        }
-        else
-        {
-            refToSD.Dim();
-        }
-
-        List<string> uniqueGeneralAuthors = DataProcessor.GeneralAuthors.Distinct().ToList();
-        UpdateButtons(uniqueGeneralAuthors, 0);
-
-        //TODO: Make an overload for this refToSD.HighlightAuthors(uniqueGeneralAuthors);
-
-        calledConnectionInfo = true;
-    }
 
     public void HighlightConnectionsbyCoauthor(string inputtedAuthor)
     {
@@ -242,6 +218,7 @@ public class GUIHandler : MonoBehaviour {
         refToDVI.ResetSphere();
         refToDVI.ResetRotators();
         refToDVI.ResetGridImage();
+        //refToSD.ContractElements();
     }
 
     public void SwitchUI(Text txt) {
@@ -271,15 +248,6 @@ public class GUIHandler : MonoBehaviour {
             GUIs[2].transform.FindChild("Reset Button").gameObject.SetActive(true);
             SetTitle("");
             DestroyButtons();
-
-            /*if (SearchEnabled && inputField.text != null && inputField.text != "")
-            {
-                HighlightConnectionsbyCoauthor(inputField.text);
-            }
-            else if (SearchEnabled)
-            {
-                HighlightConnectionsbyCoauthor();
-            }*/
         }
 	}
 
