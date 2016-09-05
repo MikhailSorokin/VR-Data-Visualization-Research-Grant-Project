@@ -26,6 +26,7 @@ public static class DataProcessor {
 		string node_title, node_year, node_conference;
 		while (count < sizeOfClusterRead)
 		{
+            //If conferences are wanted, we could always access it from this regex match.
 			node_conference = XmlFileTrace.ConferenceEnumerator.GetNextXMLAttribute (); //this is extranced from the url
 			string patternToMatch = @"db/journals/([a-z]+)/(\w|\W)*";
 			Match regexMatch = new Regex (patternToMatch).Match (node_conference);
@@ -139,8 +140,8 @@ public static class DataProcessor {
 			addedArticle = true;
 		}
 
-		//Add to the category of H.C.I.
-		else if (lowerCaseTitle.Contains ("society") || lowerCaseTitle.Contains("human") || lowerCaseTitle.Contains("unity")) {
+        //Add to the category of Human Computer Interaction
+        else if (lowerCaseTitle.Contains ("society") || lowerCaseTitle.Contains("human") || lowerCaseTitle.Contains("unity")) {
 			categoryOfArticle = "Human Computer Interaction";
 			addedArticle = true;
 		}

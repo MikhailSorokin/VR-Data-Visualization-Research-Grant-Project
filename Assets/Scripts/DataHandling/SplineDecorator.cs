@@ -97,7 +97,8 @@ public class SplineDecorator : MonoBehaviour
 
     void Start()
     {
-        masterGUIHandler = FindObjectOfType<GUIHandler>();
+        if (masterGUIHandler != null)
+            masterGUIHandler = FindObjectOfType<GUIHandler>();
 
         char let = 'a';
 
@@ -110,7 +111,7 @@ public class SplineDecorator : MonoBehaviour
 
     private void Awake()
     {
-
+        masterGUIHandler = FindObjectOfType<GUIHandler>();
         //Dim();
         spline = GetComponent<BezierSpline>();
         if (expanded)
@@ -211,7 +212,6 @@ public class SplineDecorator : MonoBehaviour
                 oPos3[f] = position;
             }
         }
-
     }
 
     private void AddInDataHelper(MasterNode node,string titleIn, int i)
@@ -865,8 +865,6 @@ public class SplineDecorator : MonoBehaviour
 
     public void ExpandDataPoint()
     {
-
-        CallAlgorithm();
         if (doOnce)
         {
             doOnce = false;
@@ -910,7 +908,6 @@ public class SplineDecorator : MonoBehaviour
                 //transform.localScale = transform.localScale * .02f;
                 StartCoroutine(TransitionExpand(nodeList));
             }
-
         }
     }
 
@@ -923,7 +920,7 @@ public class SplineDecorator : MonoBehaviour
             endLoc = transform.localPosition;
 
             StartCoroutine(TransitionContract());
-            //CallAlgorithm();
+
             expanded = false;
         }
     }
@@ -958,6 +955,7 @@ public class SplineDecorator : MonoBehaviour
         {
             AddInData(nodeList); //MUST be after propertiesSet = true
             dataAdded = true;
+            CallAlgorithm();
         }
         EnableElements();
         BrightenChildren();
@@ -1246,17 +1244,37 @@ public class SplineDecorator : MonoBehaviour
                         Vector3 menuDest =
                         GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldDestPos);
 
+                        connTrans.transform.localPosition = Vector3.zero;
+
+                        if (sourceGO.transform.parent == destGO.transform.parent)
+                        {
+                            Vector3 centerPos =
+                                GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(sourceGO.transform.parent.TransformPoint(destPos));
+                            
+                            connSpline.points[0] = menuSource;
+                            connSpline.points[1] = centerPos;
+                            connSpline.points[2] = centerPos;
+                            connSpline.points[3] = menuDest;
+
+                        } else
+                        {
+                            connSpline.points[0] = menuSource;
+                            connSpline.points[1] = menuSource / 2;
+                            connSpline.points[2] = menuDest / 2;
+                            connSpline.points[3] = menuDest;
+                        }
+
+                        /*Vector3 spawnPos = connSpline.GetPoint(0);
+                        print(spawnPos);
+                        Transform trans = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+                        trans.position = spawnPos;
+                        trans.localScale = Vector3.one * .03f;*/
+                        
                         //Debug.Log("Source Position: " + sourcePos);
                         //Debug.Log("Dest Position: " + destPos);
 
-                        connTrans.transform.localPosition = Vector3.zero;
 
-                        connSpline.points[0] = menuSource;
-                        connSpline.points[1] = menuSource / 2;
-                        connSpline.points[2] = menuDest / 2;
-                        connSpline.points[3] = menuDest;
-
-                        LoadConnectors(connSpline, connectionSplineColor);
+                        LoadConnectors(connSpline, connectionSplineColor, coAuthors.Length);
 
                         sourceGO = destGO;
                         destGO = null;
@@ -1270,7 +1288,6 @@ public class SplineDecorator : MonoBehaviour
     {
         if (splineConn.source != null && splineConn.destination != null)
         {
-
             Vector3 worldSourcePos = splineConn.source.position;
             Vector3 worldDestPos = splineConn.destination.position;
             Vector3 menuSource =
@@ -1279,12 +1296,26 @@ public class SplineDecorator : MonoBehaviour
                         GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(worldDestPos);
             //Setting start position
 
-            splineConn.points[0] = menuSource;
-            //Setting halfway points between source and dest
-            splineConn.points[1] = menuSource/2;
-            splineConn.points[2] = menuDest/2;
-            //Set end position
-            splineConn.points[3] = menuDest;
+            if (splineConn.source.transform.parent == splineConn.destination.transform.parent)
+            {
+                Vector3 centerPos =
+                    GameObject.FindGameObjectWithTag("Menu").transform.InverseTransformPoint(
+                        splineConn.destination.transform.parent.position);
+                
+                splineConn.points[0] = menuSource;
+                splineConn.points[1] = centerPos;
+                splineConn.points[2] = centerPos;
+                splineConn.points[3] = menuDest;
+            }
+            else
+            {
+                splineConn.points[0] = menuSource;
+                //Setting halfway points between source and dest
+                splineConn.points[1] = menuSource / 2;
+                splineConn.points[2] = menuDest / 2;
+                //Set end position
+                splineConn.points[3] = menuDest;
+            }
 
             float stepSize = 1f / (NUM_CONNOBJS);
             for (int p = 0, f = 0; f < NUM_CONNOBJS; f++)
@@ -1301,15 +1332,18 @@ public class SplineDecorator : MonoBehaviour
                         item.transform.LookAt(position + splineConn.GetDirection(p * stepSize));
 
                         Vector3 vel = splineConn.GetVelocity(p * stepSize);
-                        item.localScale = new Vector3(item.transform.localScale.x, item.transform.localScale.y, vel.magnitude * CONN_SCALE);
+                        
+                        item.localScale = new Vector3(item.transform.localScale.x, item.transform.localScale.y, vel.magnitude * CONN_SCALE * (32.0f/NUM_CONNOBJS));
                     }
                 }
             }
         }
     }
 
-    private void LoadConnectors(BezierSpline splineConn, Color splineColor)
+    private void LoadConnectors(BezierSpline splineConn, Color splineColor, int coauthorNumScale)
     {
+        //Coauthors - Need to scale by coauthorNumScale
+
         float stepSize = 1f / (NUM_CONNOBJS);
         for (int p = 0, f = 0; f < NUM_CONNOBJS; f++)
         {
@@ -1319,7 +1353,10 @@ public class SplineDecorator : MonoBehaviour
                 //NVM only needed in the LoadConnectors overloaded method that only takes in one param
                 //Debug.Log("Child Count: " + splineConn.transform.childCount);
                 Transform item = Instantiate(connectGuide[i]);
+
                 item.gameObject.GetComponentInChildren<Renderer>().material.SetColor("_EmissionColor", splineColor);
+                splineColor.a = Random.Range(0f, 255f);
+                item.gameObject.GetComponentInChildren<Renderer>().material.SetColor("_TintColor", splineColor);
 
                 Vector3 position = splineConn.GetPoint(p * stepSize);
                 item.transform.localPosition = position;
@@ -1329,7 +1366,7 @@ public class SplineDecorator : MonoBehaviour
                 item.transform.parent = splineConn.transform;
 
                 Vector3 vel = splineConn.GetVelocity(p * stepSize);
-                item.localScale = new Vector3(item.transform.localScale.x, item.transform.localScale.y, vel.magnitude * CONN_SCALE);
+                item.localScale = new Vector3(item.transform.localScale.x * coauthorNumScale, item.transform.localScale.y * coauthorNumScale, vel.magnitude * CONN_SCALE * (32.0f / NUM_CONNOBJS));
             }
         }
     }
@@ -1397,7 +1434,6 @@ public class SplineDecorator : MonoBehaviour
             print("to sphere");
             StartCoroutine(TransitionRingsToSphere());
             isSphere = 0;
-
         }
     }
 

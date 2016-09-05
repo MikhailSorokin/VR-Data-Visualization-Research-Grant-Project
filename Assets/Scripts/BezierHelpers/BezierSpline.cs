@@ -24,8 +24,7 @@ public class BezierSpline : MonoBehaviour
             i *= 3;
         }
         return transform.TransformPoint(
-			Bezier.GetPoint(
-            points[i], points[i + 1], points[i + 2], points[i + 3], t));
+			Bezier.GetPoint(points[i], points[i + 1], points[i + 2], points[i + 3], t));
     }
 
     public Vector3 GetVelocity(float t)

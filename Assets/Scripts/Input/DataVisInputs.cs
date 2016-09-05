@@ -37,7 +37,8 @@ public class DataVisInputs : MonoBehaviour
     public GUIParameters guiParameters;
     public TransitionParameters transitionParameters;
     public float rotationSpeed = 500.0f;
-    public bool usingMouse = false;
+    public bool usingMouseControls = false;
+    public bool menuWanted = false;
 
     //Private Variables
     private static GameObject colliderGameObject;
@@ -123,15 +124,68 @@ public class DataVisInputs : MonoBehaviour
 
         masterGUIHandler = (GUIHandler)FindObjectOfType(typeof(GUIHandler));
 
-        if (GameObject.Find("MainCamera") != null)
+        GameObject cam3D = GameObject.FindGameObjectWithTag("MainCamera");
+        GameObject vrHeadset = GameObject.FindGameObjectWithTag("VRHeadsetCam");
+
+        if (usingMouseControls)
         {
-            cam = GameObject.Find("MainCamera").gameObject.GetComponent<Camera>();
+            if (cam3D == null)
+            {
+                Debug.LogError("Could not find the camera to use for the mouse interactivity and controls.");
+                return;
+            }
+
+            if (cam3D != null)
+            {
+                cam3D.SetActive(true);
+                cam = cam3D.GetComponent<Camera>();
+            }
+
+            if (vrHeadset != null)
+            {
+                vrHeadset.SetActive(false);
+                Destroy(GameObject.Find("[SteamVR]").gameObject);
+                Destroy(GameObject.Find("Controller UI Camera"));
+                Destroy(GameObject.Find("Cursor 0"));
+                Destroy(GameObject.Find("Cursor 1"));
+            }
+
         }
+        else
+        {
+            if (vrHeadset == null)
+            {
+                Debug.LogError("Could not find the camera to use for virtual reality interactivity and controls.");
+                return;
+            }
+
+            if (vrHeadset != null)
+            {
+                vrHeadset.SetActive(true);
+                cam = vrHeadset.GetComponent<Camera>();
+            }
+
+            if (cam3D != null)
+            {
+                cam3D.SetActive(false);
+            }
+        }
+
+        ClearConsole();
+
+    }
+
+    static void ClearConsole()
+    {
+        // This simply does "LogEntries.Clear()" the long way:
+        var logEntries = System.Type.GetType("UnityEditorInternal.LogEntries,UnityEditor.dll");
+        var clearMethod = logEntries.GetMethod("Clear", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+        clearMethod.Invoke(null, null);
     }
 
     void Update()
     {
-        if (usingMouse) 
+        if (usingMouseControls) 
             UseMouseEvents();
 
         foreach (KeyValuePair<string, MasterNode> articleToMasterNode in DataProcessor.articleContainerDictionary)
@@ -404,7 +458,7 @@ public class DataVisInputs : MonoBehaviour
 
     void DoSpawnControllerMenuGUIs()
     {
-        if (!transitionedInvis)
+        if (menuWanted && !transitionedInvis)
         {
             Color originalColor = hexToColor(HEX_STRING_WITH_ALPHA);
 
@@ -415,6 +469,24 @@ public class DataVisInputs : MonoBehaviour
             gameObject.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_TintColor", originalColor);
 
             transitionedInvis = true;
+        } else if (!menuWanted)
+        {
+            //TODO: Not duplicate almost same code twice... Just lazy for now :)
+            GameObject menuHolderLeft = GameObject.Find("Controller (left)").transform.Find("Button Key").gameObject;
+
+            MeshRenderer[] textInformationL = menuHolderLeft.GetComponentsInChildren<MeshRenderer>();
+            for (int textID = 0; textID < textInformationL.Length; textID++)
+            {
+                textInformationL[textID].gameObject.SetActive(false);
+            }
+
+            GameObject menuHolderRight = GameObject.Find("Controller (right)").transform.Find("Button Key").gameObject;
+
+            MeshRenderer[] textInformationR = menuHolderRight.GetComponentsInChildren<MeshRenderer>();
+            for (int textID = 0; textID < textInformationR.Length; textID++)
+            {
+                textInformationR[textID].gameObject.SetActive(false);
+            }
         }
     }
 
@@ -560,7 +632,6 @@ public class DataVisInputs : MonoBehaviour
 
     void DoChangeOnKeyboardInput(KeyboardInteractionEventArgs e)
     {
-        //TODO: Somehow implement GUI with MouseWheel
         dataReadParameters.rotators = ControllerManager.refToMainSplineGO.GetComponentsInChildren<SplineDecorator>();
 
         //Reason we start at 1 is because 0 is the parent gameobject
@@ -773,8 +844,6 @@ public class DataVisInputs : MonoBehaviour
         ControllerManager.refToMainSplineGO.transform.rotation = Quaternion.identity;
         ControllerManager.refToMainSplineGO.transform.localScale = Vector3.one;
     }
-
-
 
     private void ToggleMenu(ControllerInteractionEventArgs e)
     {

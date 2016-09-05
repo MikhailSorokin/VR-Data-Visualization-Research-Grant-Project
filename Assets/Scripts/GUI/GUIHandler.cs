@@ -30,13 +30,22 @@ public class GUIHandler : MonoBehaviour {
 	private SplineDecorator refToSD;
     private List<string> allAuthorsInConnections = new List<string>();
 
+    //added more colors
     private Color[] colorAssortment = {
         new Color(255f/255f, 175f/255f, 0f, 255f/255f), //Light Orange 
         new Color(255f/255f, 10f/255f, 0f, 255f/255f), //Red 
         new Color(0f/255f, 0f, 255f/255f, 255f/255f), //Dark Olive Green,
         new Color(100f/255f, 149f/255f, 237f/255f, 255f/255f), //Cornflower blue
         new Color(178f/255f, 34f/255f, 34f/255f, 255f/255f), //Firebrick
-        new Color(119f/255f, 136f/255f, 153f/255f, 255f/255f) //Light Slate Gray
+        new Color(119f/255f, 136f/255f, 153f/255f, 255f/255f), //Light Slate Gray
+        new Color(81f/255f, 0f, 255f/255f, 255f/255f),
+        new Color(102f/255f, 255f/255f, 255f/255f, 255f/255f),
+        new Color(60f/255f, 255f/255f, 102f/255f, 255f/255f),
+        new Color(33f/255f, 171f/255f, 205f/255f, 255f/255f),
+        new Color(0f, 0.3f, 255f/255f, 255f/255f),
+        new Color(1f, 0.2f, 0f, 255f/255f),
+        new Color(0f/255f, 255f/255f, 128f/255f, 255f/255f),
+        new Color(226f/255f, 182f/255f, 49f/255f, 255f/255f)
     };
 
 
@@ -101,7 +110,8 @@ public class GUIHandler : MonoBehaviour {
     public void HighlightConnectionsbyCoauthor(string inputtedAuthor)
     {
         allAuthorsInConnections.Clear();
-        //Need to get all of the coauthors from the inputteduathor, who may be located
+
+        //Need to get all of the coauthors from the inputted author, who may be located
         //on various gameobjects.
         AuthorData selectedAuthorData = DataProcessor.GetADFromAuthor(inputtedAuthor);
         bool foundAtLeastOneCoAuthor = false;
