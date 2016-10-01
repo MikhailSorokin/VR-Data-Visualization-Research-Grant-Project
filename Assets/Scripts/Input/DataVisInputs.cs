@@ -124,7 +124,7 @@ public class DataVisInputs : MonoBehaviour
 
         masterGUIHandler = (GUIHandler)FindObjectOfType(typeof(GUIHandler));
 
-        GameObject cam3D = GameObject.FindGameObjectWithTag("MainCamera");
+        GameObject cam3D = GameObject.Find("MainCamera");
         GameObject vrHeadset = GameObject.FindGameObjectWithTag("VRHeadsetCam");
 
         if (usingMouseControls)
@@ -233,6 +233,7 @@ public class DataVisInputs : MonoBehaviour
     {
         RaycastHit hitInfo = new RaycastHit();
         bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
+
         if (hit)
         {
             if (hitInfo.transform.gameObject.tag == "Datapoint")

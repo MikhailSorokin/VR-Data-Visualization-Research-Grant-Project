@@ -1,0 +1,3 @@
+Steam VR wasn't working at first, needed to check the cables and make sure nothing was disconnected. That fixed the problem.
+
+For mouse click events to work, needed to add an eventsystem Gameobject in the scene.

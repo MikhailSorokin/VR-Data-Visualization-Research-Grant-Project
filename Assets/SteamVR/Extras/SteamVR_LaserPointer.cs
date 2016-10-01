@@ -99,7 +99,7 @@ public class SteamVR_LaserPointer : MonoBehaviour
         thickLPScale = new Vector3(thickness * 5f, thickness * 5f, 0f);
     }
 
-    void Start()
+    protected virtual void Start()
     {
         //Set up the origin of the laser pointer
         holder = new GameObject("Laser Pointer");
@@ -156,7 +156,7 @@ public class SteamVR_LaserPointer : MonoBehaviour
 
 
     // Update is called once per frame
-    void Update()
+    protected virtual void Update()
     {
         if (!isActive)
         {

@@ -12,12 +12,18 @@ using System.Xml.Schema;
 public class XmlLoader {
 
     /// <summary>
-    /// 
+    /// Should be a robust system in reading from an XML File.
     /// </summary>
     /// <param name="fileName">The name of the dataset to pass in. DBLP is used as default.</param>
     /// <param name="parentXmlnode">The XmlNode which is used as the main target to look at. "article" is used as default.</param>
     public void ReadFile(string fileName, string parentXmlAttribute, string[] childrenXmlAttributes)
     {
+        //TODO: Need to account for errors in reading in urls. An error page should say this:
+        /*<root response="False">
+            <error>Movie not found!</error>
+          </root>
+         */
+
         /*There is only one URL, title or year, thus we only need to load in data using an 
 		IEnumerable<string>. However, there may exist one or more authors. Thus, we need to
 		use an IEnumerable<IEnumerable<string>>*/
@@ -70,4 +76,23 @@ public class XmlLoader {
         else throw new XmlSchemaValidationException("Xml Schema Validation error: " + e.Message);
     }
 
+    internal bool DidntReachEmptyPage(string movieURLWithPageIndex)
+    {
+        XmlDocument urlDoc = new XmlDocument();
+        urlDoc.Load(movieURLWithPageIndex);
+
+        XmlElement root = urlDoc.DocumentElement;
+        XmlNodeList nodes = root.SelectNodes("error");
+
+        foreach (XmlNode node in nodes)
+        {
+            string errorMessage = node.InnerText;
+            if (errorMessage == "Movie not found!")
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

@@ -9,18 +9,24 @@ using System.Linq;
 /// </summary>
 public class GUIHandler : MonoBehaviour {
 
-	public GameObject[] GUIs; 
-	public Button confirmDatabaseSelection;
+    [Header ("GUIDisplay", order = 1)]
+	public GameObject[] GUIs;
+    [Header("Buttons", order = 2)]
+    public Button confirmDatabaseSelection;
     public Button transitionButton;
 	public Button MenuButton;
 	public Button SwitchButton;
 	public Button SourceButton;
 	public Button DestButton;
 	public Button DefaultButton;
-
-	public string parentXmlAttribute;
+    [Header("UseCertainGuis", order = 3)]
+    public bool useInputGUI = false;
+    [Header("Xml Parsing Information", order = 4)]
+    public string parentXmlAttribute;
 	public string[] childrenXmlAttributes;
+    public string[] movieURLS;
 	public Text databaseFileName;
+    [Header("Essential Connection Information", order = 5)]
 	public bool calledConnectionInfo;
 	public InputField inputField, categoryInputField;
 	public bool isOnArticle;
@@ -29,6 +35,7 @@ public class GUIHandler : MonoBehaviour {
 	private XmlLoader xmlLoader;
 	private SplineDecorator refToSD;
     private List<string> allAuthorsInConnections = new List<string>();
+    private int individualPageCount = 1;
 
     //added more colors
     private Color[] colorAssortment = {
@@ -55,14 +62,21 @@ public class GUIHandler : MonoBehaviour {
 		refToSD = GameObject.FindGameObjectWithTag ("Menu").GetComponent<SplineDecorator>();
 	}
 
-	/*Remove the start method and enable the XML chooser GUI if you want to use the GUI.*/
-	void Start() {
-		xmlLoader.ReadFile ("dblp.xml", parentXmlAttribute, childrenXmlAttributes);
+    /*Remove the start method and enable the XML chooser GUI if you want to use the GUI.*/
+    void Start() {
+        if (!useInputGUI)
+        {
+            xmlLoader.ReadFile("dblp.xml", parentXmlAttribute, childrenXmlAttributes); //this should be loaded as default
+        } else
+        {
+            Debug.Log("AHH");
+            //confirmDatabaseSelection.GetComponent<Canvas>().eve = Camera.main;
+        }
 	}
 
 	void Update () {
 		confirmDatabaseSelection.onClick.RemoveAllListeners();
-        //confirmDatabaseSelection.onClick.AddListener(delegate { XmlScriptCall(); });
+        confirmDatabaseSelection.onClick.AddListener(delegate { XmlScriptCall(); });
         transitionButton.onClick.AddListener(delegate { TransitionToView(); });
     }
 
@@ -77,13 +91,33 @@ public class GUIHandler : MonoBehaviour {
         }
     }
 
-	private void XmlScriptCall()
+    /// <summary>
+    /// This is called from a button press on the "GUI - Database" Gameobject.
+    /// It starts the process of reading from a database, either from a local
+    /// folder, or online. 
+    /// </summary>
+	public void XmlScriptCall()
 	{
-		xmlLoader.ReadFile(databaseFileName.text + ".xml", parentXmlAttribute, childrenXmlAttributes);
-		SwitchGUIDisplay();
+        Camera cam = confirmDatabaseSelection.GetComponent<Camera>();
+        string removedString = "";
+        if (useInputGUI)
+        {
+            for (int urlInd = 0; urlInd < movieURLS.Length; urlInd++) {
+                do
+                {
+                    removedString = movieURLS[urlInd].Remove(movieURLS[urlInd].Length - 1);
+                    removedString += individualPageCount;
+                    Debug.Log("Printing the current page retrieval: " + individualPageCount + ", from the URL: "
+                        + removedString);
+                    //xmlLoader.ReadFile(movieURLS[urlInd], parentXmlAttribute, childrenXmlAttributes);
+                    individualPageCount++; //pageCount always starts at one
+                } while (xmlLoader.DidntReachEmptyPage(removedString));
+           }
+        }
+		//SwitchGUIDisplay();
 	}
 
-    private void TransitionToView()
+    public void TransitionToView()
     {
         SwitchGUIDisplay();
     }
@@ -94,10 +128,13 @@ public class GUIHandler : MonoBehaviour {
     /// </summary>
     private void SwitchGUIDisplay()
 	{
-		/* GUIs [0].GetComponent<Canvas> ().worldCamera = null;
-		GUIs [0].gameObject.SetActive(false);
-        GUIs [1].GetComponent<Canvas>().worldCamera = null;
-        GUIs [1].gameObject.SetActive(false); */
+        if (useInputGUI)
+        {
+            GUIs[0].GetComponent<Canvas>().worldCamera = null;
+            GUIs[0].gameObject.SetActive(false);
+            GUIs[1].GetComponent<Canvas>().worldCamera = null;
+            GUIs[1].gameObject.SetActive(false);
+        }
         GUIs [2].gameObject.SetActive(true);
 		GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("Controller UI Camera").GetComponent<Camera>();
 		//ActiveUI = GUIs [1];
