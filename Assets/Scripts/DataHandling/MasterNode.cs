@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Master node - stores everything (besides article title).
-/// This will be accessed as a Value from a Key of an article title in a Dictionary class.
+/// This will be accessed as a Value from a Key of a data title in a Dictionary class.
 /// </summary>
 public class MasterNode {
 
@@ -17,6 +17,12 @@ public class MasterNode {
 	private string category;
 
 	private GameObject[] bezierPoints = new GameObject[MAX_LEVELS];
+
+	public MasterNode(string title, int year)
+	{
+		year = this.year;
+		title = this.title;
+	}
 
 	/* Constructor without URL and GameObject.
      * (If I don't get any immediate information about the GameObject, I can just use this by default, with the key as the article.)

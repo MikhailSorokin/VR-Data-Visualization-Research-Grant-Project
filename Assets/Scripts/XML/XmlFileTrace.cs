@@ -148,6 +148,19 @@ public class XmlFileTrace
         years = new YearInformation(_years.GetEnumerator());
     }
 
+	public static List<string> allURLTitles = new List<string>();
+	public static List<int> allURLYears = new List<int> ();
+
+	internal static void SetLists(List<string> titles, List<int> years)
+	{
+		foreach (string title in titles) {
+			allURLTitles.Add (title);
+		}
+		foreach (int year in years) {
+			allURLYears.Add (year);
+		}
+	}
+
     public static AuthorInformation AuthorsEnumerator
     {
         get { return authors; }

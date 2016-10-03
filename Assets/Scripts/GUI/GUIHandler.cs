@@ -109,12 +109,16 @@ public class GUIHandler : MonoBehaviour {
                     removedString += individualPageCount;
                     Debug.Log("Printing the current page retrieval: " + individualPageCount + ", from the URL: "
                         + removedString);
-                    //xmlLoader.ReadFile(movieURLS[urlInd], parentXmlAttribute, childrenXmlAttributes);
+					xmlLoader.ReadURL("Movie", removedString, parentXmlAttribute, childrenXmlAttributes);
                     individualPageCount++; //pageCount always starts at one
+					removedString = movieURLS[urlInd].Remove(movieURLS[urlInd].Length - 1);
+					removedString += individualPageCount;
                 } while (xmlLoader.DidntReachEmptyPage(removedString));
+				individualPageCount = 0;
            }
         }
-		//SwitchGUIDisplay();
+		SwitchGUIDisplay ();
+
 	}
 
     public void TransitionToView()
@@ -136,7 +140,12 @@ public class GUIHandler : MonoBehaviour {
             GUIs[1].gameObject.SetActive(false);
         }
         GUIs [2].gameObject.SetActive(true);
-		GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("Controller UI Camera").GetComponent<Camera>();
+		//TODO: Make the DataVisInputs class static and use the mouseControls boolean variable from there.
+		if (GameObject.Find ("Controller UI Camera") != null) {
+			GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("Controller UI Camera").GetComponent<Camera> ();
+		} else {
+			GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("MainCamera").GetComponent<Camera> ();
+		}
 		//ActiveUI = GUIs [1];
 	}
 

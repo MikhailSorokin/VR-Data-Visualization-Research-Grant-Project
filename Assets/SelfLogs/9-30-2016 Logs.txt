@@ -1,3 +1,9 @@
 Steam VR wasn't working at first, needed to check the cables and make sure nothing was disconnected. That fixed the problem.
 
 For mouse click events to work, needed to add an eventsystem Gameobject in the scene.
+
+//FIXED: Need to account for errors in reading in urls. An error page should say this:
+/*<root response="False">
+  	<error>Movie not found!</error>
+  </root>
+*/	

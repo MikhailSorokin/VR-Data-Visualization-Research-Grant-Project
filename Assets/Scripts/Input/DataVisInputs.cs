@@ -39,6 +39,7 @@ public class DataVisInputs : MonoBehaviour
     public float rotationSpeed = 500.0f;
     public bool usingMouseControls = false;
     public bool menuWanted = false;
+	public string dataType = "DBLP";
 
     //Private Variables
     private static GameObject colliderGameObject;
@@ -508,7 +509,7 @@ public class DataVisInputs : MonoBehaviour
     {
         ResetRotators();
         ResetGridImage();
-        DataProcessor.ReadAndProcessData(dataReadParameters.sizeOfClusterRead);
+        DataProcessor.ReadAndProcessData(dataReadParameters.sizeOfClusterRead, dataType);
         ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().AddInData(DataProcessor.GetAllMasterNodes());
         DataProcessor.ClearTempCluster();
 
@@ -533,9 +534,6 @@ public class DataVisInputs : MonoBehaviour
             }
 
             ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().CallAlgorithm();
-            //What I can do is access the positions of the line renderer component on of the sphere and just update those positions with the current GO positions on the sphere.
-            //This way, we don't have to call the algorithm every time, which may take more time then needed
-
         }
     }
 
@@ -543,7 +541,7 @@ public class DataVisInputs : MonoBehaviour
     {
         ResetRotators();
         ResetGridImage();
-        DataProcessor.ReadAndProcessData(dataReadParameters.sizeOfClusterRead);
+		DataProcessor.ReadAndProcessData(dataReadParameters.sizeOfClusterRead, dataType);
         ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().AddInData(DataProcessor.GetAllMasterNodes());
         DataProcessor.ClearTempCluster();
 
@@ -568,9 +566,6 @@ public class DataVisInputs : MonoBehaviour
             }
 
             ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().CallAlgorithm();
-            //What I can do is access the positions of the line renderer component on of the sphere and just update those positions with the current GO positions on the sphere.
-            //This way, we don't have to call the algorithm every time, which may take more time then needed
-
         }
     }
 

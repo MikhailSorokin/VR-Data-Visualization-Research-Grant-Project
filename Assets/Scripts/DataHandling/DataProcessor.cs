@@ -20,61 +20,74 @@ public static class DataProcessor {
     private static List<string> algorithmDestAuthors = new List<string>();
     private static int count = 0;
 
-	public static void ReadAndProcessData(int sizeOfClusterRead)
+	public static void ReadAndProcessData(int sizeOfClusterRead, string dataType)
 	{
-		IEnumerable<string> node_authors;
-		string node_title, node_year, node_conference;
-		while (count < sizeOfClusterRead)
-		{
-            //If conferences are wanted, we could always access it from this regex match.
-			node_conference = XmlFileTrace.ConferenceEnumerator.GetNextXMLAttribute (); //this is extranced from the url
-			string patternToMatch = @"db/journals/([a-z]+)/(\w|\W)*";
-			Match regexMatch = new Regex (patternToMatch).Match (node_conference);
-			node_conference = regexMatch.Groups[1].Value.ToUpper(); //IMPORTANT - First regex match in a group is at index 1, NOT 0
+		if (dataType == "DBLP") {
+			IEnumerable<string> node_authors;
+			string node_title, node_year, node_conference;
+			while (count < sizeOfClusterRead) {
+				//If conferences are wanted, we could always access it from this regex match.
+				node_conference = XmlFileTrace.ConferenceEnumerator.GetNextXMLAttribute (); //this is extranced from the url
+				string patternToMatch = @"db/journals/([a-z]+)/(\w|\W)*";
+				Match regexMatch = new Regex (patternToMatch).Match (node_conference);
+				node_conference = regexMatch.Groups [1].Value.ToUpper (); //IMPORTANT - First regex match in a group is at index 1, NOT 0
 
-			node_title = XmlFileTrace.TitlesEnumerator.GetNextXMLAttribute();
+				node_title = XmlFileTrace.TitlesEnumerator.GetNextXMLAttribute ();
 
-			node_authors = XmlFileTrace.AuthorsEnumerator.GetNextXMLAttribute();
-			List<string> list_node_authors = node_authors.ToList();
+				node_authors = XmlFileTrace.AuthorsEnumerator.GetNextXMLAttribute ();
+				List<string> list_node_authors = node_authors.ToList ();
 
-			int node_year_int = 0;
-			node_year = XmlFileTrace.YearsEnumerator.GetNextXMLAttribute();
+				int node_year_int = 0;
+				node_year = XmlFileTrace.YearsEnumerator.GetNextXMLAttribute ();
 
-			//Convert the string to an int
-			if (int.TryParse(node_year, out node_year_int))
-			{
-				string categoryOfArticle = CurrentArticleCategory (node_title.ToLower ());
+				//Convert the string to an int
+				if (int.TryParse (node_year, out node_year_int)) {
+					string categoryOfArticle = CurrentArticleCategory (node_title.ToLower ());
 
-				MasterNode masterNode = new MasterNode(list_node_authors, node_title, node_conference, node_year_int, categoryOfArticle); 
+					MasterNode masterNode = new MasterNode (list_node_authors, node_title, node_conference, node_year_int, categoryOfArticle); 
 
-				tempClusterMasterNodes.Add(masterNode);
-				if (!articleContainerDictionary.ContainsKey (node_title)) {
-					articleContainerDictionary [node_title] = masterNode; //there should always be a unique article
-				} else
-					articleContainerDictionary ["Duplicate: " + node_title] = masterNode; //throw new Exception("There is a duplicate article in this XML. Please get a new XML file! The Article is: " + node_title);
+					tempClusterMasterNodes.Add (masterNode);
+					if (!articleContainerDictionary.ContainsKey (node_title)) {
+						articleContainerDictionary [node_title] = masterNode; //there should always be a unique article
+					} else
+						articleContainerDictionary ["Duplicate: " + node_title] = masterNode; //throw new Exception("There is a duplicate article in this XML. Please get a new XML file! The Article is: " + node_title);
 
-				//This is for getting individual author information, important for knowing how many articles an article has publichsed within a category
-				foreach (string author in list_node_authors) {
-                    if (!uniqueAuthors.Contains (author)) {
-						uniqueAuthors.Add (author);
-						AuthorData ad = new AuthorData (author, categoryOfArticle);
-						ad.UpdateCategory (categoryOfArticle);
-                        ad.CoauthorNum += (list_node_authors.Count - 1); //do minus one so we do not include the current author as well
-                        allAuthorData.Add (ad);
-					} else {
-						AuthorData updatedAuthorData = GetADFromAuthor (author);
-						updatedAuthorData.UpdateCategory (categoryOfArticle);
-                        updatedAuthorData.CoauthorNum += (list_node_authors.Count - 1); //-1 for reason specified above
+					//This is for getting individual author information, important for knowing how many articles an article has publichsed within a category
+					foreach (string author in list_node_authors) {
+						if (!uniqueAuthors.Contains (author)) {
+							uniqueAuthors.Add (author);
+							AuthorData ad = new AuthorData (author, categoryOfArticle);
+							ad.UpdateCategory (categoryOfArticle);
+							ad.CoauthorNum += (list_node_authors.Count - 1); //do minus one so we do not include the current author as well
+							allAuthorData.Add (ad);
+						} else {
+							AuthorData updatedAuthorData = GetADFromAuthor (author);
+							updatedAuthorData.UpdateCategory (categoryOfArticle);
+							updatedAuthorData.CoauthorNum += (list_node_authors.Count - 1); //-1 for reason specified above
+						}
 					}
-				}
 
-				categoryOfArticle = null;
+					categoryOfArticle = null;
+					count++; //increment to the next element in the cluster
+				} else
+					throw new InvalidOperationException ("Could not parse the string year to an integer for some reason!");
+			}
+
+			count = 0;
+		} else if (dataType == "Movie") {
+			List<string> node_titles = XmlFileTrace.allURLTitles;
+			List<int> node_years = XmlFileTrace.allURLYears;
+			while (count < sizeOfClusterRead && node_titles[count] != null && node_years[count] != null) {
+				MasterNode masterNode = new MasterNode (node_titles[count], node_years[count]); 
+				masterNode.Year = node_years [count];
+				masterNode.Title = node_titles [count];
+				tempClusterMasterNodes.Add (masterNode);
+
 				count++; //increment to the next element in the cluster
 			}
-			else throw new InvalidOperationException("Could not parse the string year to an integer for some reason!");
-		}
 
-		count = 0;
+			count = 0;
+		}
 	}
 
 	public static AuthorData GetADFromAuthor(string author) {
