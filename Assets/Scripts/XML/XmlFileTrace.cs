@@ -153,12 +153,8 @@ public class XmlFileTrace
 
 	internal static void SetLists(List<string> titles, List<int> years)
 	{
-		foreach (string title in titles) {
-			allURLTitles.Add (title);
-		}
-		foreach (int year in years) {
-			allURLYears.Add (year);
-		}
+		allURLTitles = titles;
+		allURLYears = years;
 	}
 
     public static AuthorInformation AuthorsEnumerator

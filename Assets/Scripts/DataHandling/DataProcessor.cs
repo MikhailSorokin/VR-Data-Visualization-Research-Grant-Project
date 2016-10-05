@@ -22,6 +22,7 @@ public static class DataProcessor {
 
 	public static void ReadAndProcessData(int sizeOfClusterRead, string dataType)
 	{
+		int numType = 0;
 		if (dataType == "DBLP") {
 			IEnumerable<string> node_authors;
 			string node_title, node_year, node_conference;
@@ -56,7 +57,7 @@ public static class DataProcessor {
 					foreach (string author in list_node_authors) {
 						if (!uniqueAuthors.Contains (author)) {
 							uniqueAuthors.Add (author);
-							AuthorData ad = new AuthorData (author, categoryOfArticle);
+							AuthorData ad = new AuthorData (author, categoryOfArticle, numType);
 							ad.UpdateCategory (categoryOfArticle);
 							ad.CoauthorNum += (list_node_authors.Count - 1); //do minus one so we do not include the current author as well
 							allAuthorData.Add (ad);
@@ -75,18 +76,41 @@ public static class DataProcessor {
 
 			count = 0;
 		} else if (dataType == "Movie") {
+			numType = 1;
 			List<string> node_titles = XmlFileTrace.allURLTitles;
 			List<int> node_years = XmlFileTrace.allURLYears;
-			while (count < sizeOfClusterRead && node_titles[count] != null && node_years[count] != null) {
-				MasterNode masterNode = new MasterNode (node_titles[count], node_years[count]); 
-				masterNode.Year = node_years [count];
-				masterNode.Title = node_titles [count];
-				tempClusterMasterNodes.Add (masterNode);
+			if (node_titles.Count == node_years.Count) {
+				for (int node_ind = 0; node_ind < node_titles.Count; node_ind++) {
+					List<MasterNode> masterNodes = new List<MasterNode>();
+					AuthorData ad = null;
 
-				count++; //increment to the next element in the cluster
+					//Check to add only if there isn't a masterNode with the title and year and same category.
+					if (node_titles [node_ind].Contains ("Batman")) {
+						MasterNode mn = new MasterNode(node_titles[node_ind], node_years[node_ind], "Batman");
+						masterNodes.Add(mn); 
+						ad = new AuthorData (mn.Title, "Batman", numType);
+						ad.UpdateCategory ("Batman"); //make the category accessible from the GUI that will be created.
+					} 
+					if (node_titles[node_ind].Contains("Superman")) {
+						MasterNode mn = new MasterNode (node_titles [node_ind], node_years [node_ind], "Superman");
+						masterNodes.Add(mn); 
+						ad = new AuthorData (mn.Title, "Superman", numType);
+						ad.UpdateCategory ("Superman"); //make the category accessible from the GUI that will be created.
+					}
+					if (node_titles[node_ind].Contains("Iron Man")) {
+						MasterNode mn = new MasterNode (node_titles [node_ind], node_years [node_ind], "Iron Man");
+						masterNodes.Add(mn); 
+						ad = new AuthorData (mn.Title, "Iron Man", numType);
+						ad.UpdateCategory ("Iron Man"); //make the category accessible from the GUI that will be created.
+					}
+
+					foreach (MasterNode masterNode in masterNodes) {
+						masterNode.Year = node_years [node_ind];
+						masterNode.Title = node_titles [node_ind];
+						tempClusterMasterNodes.Add (masterNode);
+					}
+				}
 			}
-
-			count = 0;
 		}
 	}
 

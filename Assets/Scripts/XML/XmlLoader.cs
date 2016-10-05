@@ -49,7 +49,6 @@ public class XmlLoader {
 		XmlDocument urlDoc = new XmlDocument();
 		urlDoc.Load(movieURL);
 
-
 		XmlElement root = urlDoc.DocumentElement;
 		XmlNodeList nodes = root.SelectNodes("result");
 
@@ -57,15 +56,14 @@ public class XmlLoader {
 		{
 			XmlAttributeCollection attributes = node.Attributes;
 			foreach (XmlAttribute at in attributes) {
-				if (at.LocalName == "title")
+				if (at.LocalName == "title") {
 					moveTitles.Add (at.Value);
-				else if (at.LocalName == "year") {
+				} else if (at.LocalName == "year") {
 					int resAttempt;
 					if (int.TryParse (at.Value, out resAttempt)) {
 						movieYears.Add (resAttempt);
 					} else {
 						/*This only happens when the type of the node is a series, not a movie.*/
-						char[] separatingChars = {'-'};
 						Debug.Log (at.Value);
 						movieYears.Add (int.Parse(at.Value.Substring(0, 4)));
 					}
@@ -133,4 +131,5 @@ public class XmlLoader {
 
         return true;
     }
+
 }

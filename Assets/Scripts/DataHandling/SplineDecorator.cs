@@ -246,7 +246,6 @@ public class SplineDecorator : MonoBehaviour
     public void AddInData(MasterNode node)
     {
         int yr = node.Year;
-		Debug.Log ("Title: " + node.Title + ", Year: " + yr);
 
         if (expanded)
         {
@@ -283,7 +282,6 @@ public class SplineDecorator : MonoBehaviour
             else if (datasetCategory == DatasetCategory.Years)
             {
                 int yearID = yr % 10;
-                
                 for (int i = 0; i < elements.Length; i++)
                 {
                     if (yearID == i)
@@ -378,7 +376,9 @@ public class SplineDecorator : MonoBehaviour
 
             else if (datasetCategory == DatasetCategory.Categories)
             {
+				Debug.Log ("Title: " + node.Title + ", Year: " + yr);
                 string cat = node.Category;
+				Debug.Log (cat);
                 int colorID = 0;
                 
                 //Can we switch "categories" to a dictionary?
@@ -773,6 +773,7 @@ public class SplineDecorator : MonoBehaviour
                 }
                 else if (datasetCategory == DatasetCategory.Decades)
                 {
+					Debug.Log ("MasterNode count: " + masterNodes.Count);
                     foreach (MasterNode node in masterNodes)
                     {
 
@@ -832,7 +833,7 @@ public class SplineDecorator : MonoBehaviour
                                 {
                                     if (!propertiesSet)
                                         DataSetStrings.Add(node.Title);
-
+									
                                     SplineDecorator sp = elements[i].GetComponent<SplineDecorator>();
                                     sp.textColor = textColor;
                                     sp.AddInData(node);

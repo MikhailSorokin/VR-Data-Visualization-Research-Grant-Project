@@ -18,10 +18,11 @@ public class MasterNode {
 
 	private GameObject[] bezierPoints = new GameObject[MAX_LEVELS];
 
-	public MasterNode(string title, int year)
+	public MasterNode(string title, int year, string category)
 	{
-		year = this.year;
-		title = this.title;
+		this.year = year;
+		this.title = title;
+		this.category = category;
 	}
 
 	/* Constructor without URL and GameObject.
