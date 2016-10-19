@@ -888,6 +888,7 @@ public class SplineDecorator : MonoBehaviour
 
                 foreach (string str in DataSetStrings)
                 {
+					//TODO: Need to get the articleContainerDictionary to be successfully initialized with key->value pairs
                     nodeList.Add(DataProcessor.articleContainerDictionary[str]);
                 }
 

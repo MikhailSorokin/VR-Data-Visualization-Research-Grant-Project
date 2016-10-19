@@ -45,6 +45,31 @@ public class XmlLoader {
 		} 
 	}
 
+	public static void ReadMovieData(string movieURL) {
+		XmlDocument urlDoc = new XmlDocument();
+		urlDoc.Load(movieURL);
+
+		XmlElement root = urlDoc.DocumentElement;
+		XmlNodeList nodes = root.SelectNodes("movie");
+
+		foreach (XmlNode node in nodes)
+		{
+			if (node.InnerText == "Movie not found!")
+			{
+				return;
+			}
+
+			XmlAttributeCollection attributes = node.Attributes;
+			foreach (XmlAttribute at in attributes) {
+				if (at.LocalName == "imdbRating") {
+					Debug.Log ("Movie: " + movieURL + ", Rating: " + at.Value);
+				} else if (at.LocalName == "awards") {
+					Debug.Log ("Awards: " + at.Value);
+				}
+			}
+		}
+	}
+
 	private void ReadMovieURL (string movieURL, string parentXmlAttribute, string[] childrenXmlAttributes) {
 		XmlDocument urlDoc = new XmlDocument();
 		urlDoc.Load(movieURL);
@@ -113,23 +138,27 @@ public class XmlLoader {
 
     internal bool DidntReachEmptyPage(string movieURLWithPageIndex)
     {
-        XmlDocument urlDoc = new XmlDocument();
-        urlDoc.Load(movieURLWithPageIndex);
+		try {
+	        XmlDocument urlDoc = new XmlDocument();
+	        urlDoc.Load(movieURLWithPageIndex);
 
-        XmlElement root = urlDoc.DocumentElement;
-        XmlNodeList nodes = root.SelectNodes("error");
+	        XmlElement root = urlDoc.DocumentElement;
+	        XmlNodeList nodes = root.SelectNodes("error");
 
-        foreach (XmlNode node in nodes)
-        {
-            string errorMessage = node.InnerText;
-            if (errorMessage == "Movie not found!")
-            {
-				
-                return false;
-            }
-        }
+	        foreach (XmlNode node in nodes)
+	        {
+	            string errorMessage = node.InnerText;
+	            if (errorMessage == "Movie not found!")
+	            {
+					
+	                return false;
+	            }
+	        }
 
-        return true;
+	        return true;
+		} catch (XmlException xe) {
+			return true;
+		}
     }
 
 }

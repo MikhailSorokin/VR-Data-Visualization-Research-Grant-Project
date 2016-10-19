@@ -105,13 +105,24 @@ public static class DataProcessor {
 					}
 
 					foreach (MasterNode masterNode in masterNodes) {
-						masterNode.Year = node_years [node_ind];
-						masterNode.Title = node_titles [node_ind];
-						tempClusterMasterNodes.Add (masterNode);
+						if (!tempClusterMasterNodes.Contains (masterNode)) {
+							masterNode.Year = node_years [node_ind];
+							masterNode.Title = node_titles [node_ind];
+							tempClusterMasterNodes.Add (masterNode);
+						}
 					}
 				}
 			}
+
+			//DEBUG TEST:
+
+			LookupInfo (node_titles [0]);
 		}
+	}
+
+	private static void LookupInfo(string title) {
+		string url = "http://omdbapi.com/?r=xml&t=" + title;
+		XmlLoader.ReadMovieData (url);
 	}
 
 	public static AuthorData GetADFromAuthor(string author) {
