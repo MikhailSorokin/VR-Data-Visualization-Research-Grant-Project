@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using HandControlllerInputs;
 
-public class BaseLaserPointer : SteamVR_LaserPointer {
+public class BaseLaserPointer : ControllerLaserPointer {
 
     //public bool moving = false;
 
@@ -13,7 +13,7 @@ public class BaseLaserPointer : SteamVR_LaserPointer {
     protected Vector3 thinLPScale;
     protected Vector3 thickLPScale;
 
-    SteamVR_LaserPointer steamVR = new SteamVR_LaserPointer();
+    ControllerLaserPointer steamVR = new ControllerLaserPointer();
 
     protected override void Start()
     {

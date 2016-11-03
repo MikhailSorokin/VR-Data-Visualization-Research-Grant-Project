@@ -29,7 +29,7 @@ public class SteamVR_GrabInteractor : MonoBehaviour
     Joint controllerAttachJoint;
     GameObject grabbedObject = null;
 
-    SteamVR_LaserPointer laserPointer;
+    ControllerLaserPointer laserPointer;
     SteamVR_TrackedObject trackedController;
     SteamVR_ControllerActions controllerActions;
 
@@ -68,13 +68,13 @@ public class SteamVR_GrabInteractor : MonoBehaviour
             return;
         }
 
-        if (GetComponent<SteamVR_LaserPointer>() == null)
+        if (GetComponent<ControllerLaserPointer>() == null)
         {
-            Debug.LogError("SteamVR_InteractGrab is required to be attached to a SteamVR Controller that has the SteamVR_LaserPointer script attached to it");
+            Debug.LogError("SteamVR_InteractGrab is required to be attached to a SteamVR Controller that has the LaserPointerInputModule script attached to it");
             return;
         }
 
-        laserPointer = GetComponent<SteamVR_LaserPointer>();
+        laserPointer = GetComponent<ControllerLaserPointer>();
         trackedController = GetComponent<SteamVR_TrackedObject>();
         controllerActions = GetComponent<SteamVR_ControllerActions>();
     }

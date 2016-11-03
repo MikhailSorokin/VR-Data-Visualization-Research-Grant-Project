@@ -20,7 +20,7 @@ public class GUIHandler : MonoBehaviour {
 	public Button DestButton;
 	public Button DefaultButton;
     [Header("UseCertainGuis", order = 3)]
-    public bool useInputGUI = false;
+    public bool useDatabaseGUI = false;
     [Header("Xml Parsing Information", order = 4)]
     public string parentXmlAttribute;
 	public string[] childrenXmlAttributes;
@@ -60,17 +60,17 @@ public class GUIHandler : MonoBehaviour {
 	{
 		xmlLoader = new XmlLoader();
 		refToSD = GameObject.FindGameObjectWithTag ("Menu").GetComponent<SplineDecorator>();
-	}
+    }
 
     /*Remove the start method and enable the XML chooser GUI if you want to use the GUI.*/
     void Start() {
-        if (!useInputGUI)
+        if (!useDatabaseGUI)
         {
             xmlLoader.ReadFile("dblp.xml", parentXmlAttribute, childrenXmlAttributes); //this should be loaded as default
+            TransitionToView();
         } else
         {
-            Debug.Log("AHH");
-            //confirmDatabaseSelection.GetComponent<Canvas>().eve = Camera.main;
+            confirmDatabaseSelection.GetComponent<Canvas>().worldCamera = Camera.main;
         }
 	}
 
@@ -100,7 +100,7 @@ public class GUIHandler : MonoBehaviour {
 	{
         Camera cam = confirmDatabaseSelection.GetComponent<Camera>();
         string removedString = "";
-        if (useInputGUI)
+        if (useDatabaseGUI)
         {
             for (int urlInd = 0; urlInd < movieURLS.Length; urlInd++) {
                 do
@@ -132,7 +132,8 @@ public class GUIHandler : MonoBehaviour {
     /// </summary>
     private void SwitchGUIDisplay()
 	{
-        if (useInputGUI)
+
+        if (useDatabaseGUI)
         {
             GUIs[0].GetComponent<Canvas>().worldCamera = null;
             GUIs[0].gameObject.SetActive(false);
@@ -141,8 +142,9 @@ public class GUIHandler : MonoBehaviour {
         }
         GUIs [2].gameObject.SetActive(true);
 		//TODO: Make the DataVisInputs class static and use the mouseControls boolean variable from there.
-		if (GameObject.Find ("Controller UI Camera") != null) {
-			GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("Controller UI Camera").GetComponent<Camera> ();
+		if (!DataVisInputs.usingMouseControls) {
+            Debug.Log("Found a controller UI Camera.");
+			GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("UI Camera").GetComponent<Camera> ();
 		} else {
 			GUIs [2].GetComponent<Canvas> ().worldCamera = GameObject.Find ("MainCamera").GetComponent<Camera> ();
 		}

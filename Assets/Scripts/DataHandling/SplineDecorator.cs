@@ -376,9 +376,9 @@ public class SplineDecorator : MonoBehaviour
 
             else if (datasetCategory == DatasetCategory.Categories)
             {
-				Debug.Log ("Title: " + node.Title + ", Year: " + yr);
+				//Debug.Log ("Title: " + node.Title + ", Year: " + yr);
                 string cat = node.Category;
-				Debug.Log (cat);
+				//Debug.Log (cat);
                 int colorID = 0;
                 
                 //Can we switch "categories" to a dictionary?
@@ -773,7 +773,7 @@ public class SplineDecorator : MonoBehaviour
                 }
                 else if (datasetCategory == DatasetCategory.Decades)
                 {
-					Debug.Log ("MasterNode count: " + masterNodes.Count);
+					//Debug.Log ("MasterNode count: " + masterNodes.Count);
                     foreach (MasterNode node in masterNodes)
                     {
 
