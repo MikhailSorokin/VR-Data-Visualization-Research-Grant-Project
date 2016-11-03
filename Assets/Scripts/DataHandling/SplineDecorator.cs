@@ -282,7 +282,6 @@ public class SplineDecorator : MonoBehaviour
             else if (datasetCategory == DatasetCategory.Years)
             {
                 int yearID = yr % 10;
-                
                 for (int i = 0; i < elements.Length; i++)
                 {
                     if (yearID == i)
@@ -377,7 +376,9 @@ public class SplineDecorator : MonoBehaviour
 
             else if (datasetCategory == DatasetCategory.Categories)
             {
+				//Debug.Log ("Title: " + node.Title + ", Year: " + yr);
                 string cat = node.Category;
+				//Debug.Log (cat);
                 int colorID = 0;
                 
                 //Can we switch "categories" to a dictionary?
@@ -491,21 +492,24 @@ public class SplineDecorator : MonoBehaviour
         node.MasterNodeGameObjects[level] = elements[elementIndex].gameObject;
         //Need to get the author from different locations
 
-        for (int authorIndex = 0; authorIndex < node.Authors.Count; authorIndex++)
-        {
-            AuthorData authorData = DataProcessor.GetADFromAuthor(node.Authors[authorIndex]);
+		if (node.Authors != null) {
+			for (int authorIndex = 0; authorIndex < node.Authors.Count; authorIndex++) {
+				AuthorData authorData = DataProcessor.GetADFromAuthor (node.Authors [authorIndex]);
 
-            foreach (string author in node.Authors)
-            {
-                if (author != authorData.Author)
-                {
-                    if (!authorData.goLocations.ContainsKey(node.MasterNodeGameObjects[level]))
-                        authorData.goLocations[node.MasterNodeGameObjects[level]] = new List<string>();
+				foreach (string author in node.Authors) {
+					if (author != authorData.Author) {
+						if (!authorData.goLocations.ContainsKey (node.MasterNodeGameObjects [level]))
+							authorData.goLocations [node.MasterNodeGameObjects [level]] = new List<string> ();
 
-                    authorData.goLocations[node.MasterNodeGameObjects[level]].Add(author);
-                }
-            }
-        }
+						authorData.goLocations [node.MasterNodeGameObjects [level]].Add (author);
+					}
+				}
+			}
+		} else if (node.Title != null) {
+			/*AuthorData authorData = DataProcessor.GetADFromTitle (node.Authors [authorIndex]);
+			authorData.goLocations [node.MasterNodeGameObjects [level]] = new List<string> ();
+			authorData.goLocations [node.MasterNodeGameObjects [level]].Add(node.Title);*/
+		}
     }
 
     public void AddInAuthors()
@@ -712,7 +716,6 @@ public class SplineDecorator : MonoBehaviour
                 // categories are populated by default at play start
                 if (datasetCategory == DatasetCategory.Categories)
                 {
-
                     foreach (MasterNode node in masterNodes)
                     {
                         string cat = node.Category;
@@ -730,8 +733,8 @@ public class SplineDecorator : MonoBehaviour
                                     Material mat = new Material(child.GetComponent<Renderer>().material);
                                     mat.color = new Color(0.0f, 0.3f, 1.0f, 0.1f);
                                     elements[i].FindChild("Ring_01").GetComponent<Renderer>().material = mat;
-
                                 }
+
                                 float stepSize = 1f / (frequency);
                                 Vector3 position = spline.GetPoint((float)i * stepSize);
 
@@ -770,6 +773,7 @@ public class SplineDecorator : MonoBehaviour
                 }
                 else if (datasetCategory == DatasetCategory.Decades)
                 {
+					//Debug.Log ("MasterNode count: " + masterNodes.Count);
                     foreach (MasterNode node in masterNodes)
                     {
 
@@ -829,7 +833,7 @@ public class SplineDecorator : MonoBehaviour
                                 {
                                     if (!propertiesSet)
                                         DataSetStrings.Add(node.Title);
-
+									
                                     SplineDecorator sp = elements[i].GetComponent<SplineDecorator>();
                                     sp.textColor = textColor;
                                     sp.AddInData(node);
@@ -884,6 +888,7 @@ public class SplineDecorator : MonoBehaviour
 
                 foreach (string str in DataSetStrings)
                 {
+					//TODO: Need to get the articleContainerDictionary to be successfully initialized with key->value pairs
                     nodeList.Add(DataProcessor.articleContainerDictionary[str]);
                 }
 

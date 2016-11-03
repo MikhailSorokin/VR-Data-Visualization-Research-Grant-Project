@@ -4,6 +4,7 @@ using System.Xml;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using System.Xml.Schema;
+using UnityEngine;
 
 /// <summary>
 /// This class should be used by a GUI, which will pass in certain information retrieved by a XML dataset,
@@ -11,19 +12,16 @@ using System.Xml.Schema;
 /// </summary>
 public class XmlLoader {
 
+	public List<string> moveTitles = new List<string> ();
+	public List<int> movieYears = new List<int> ();
+
     /// <summary>
     /// Should be a robust system in reading from an XML File.
     /// </summary>
     /// <param name="fileName">The name of the dataset to pass in. DBLP is used as default.</param>
     /// <param name="parentXmlnode">The XmlNode which is used as the main target to look at. "article" is used as default.</param>
     public void ReadFile(string fileName, string parentXmlAttribute, string[] childrenXmlAttributes)
-    {
-        //TODO: Need to account for errors in reading in urls. An error page should say this:
-        /*<root response="False">
-            <error>Movie not found!</error>
-          </root>
-         */
-
+	{
         /*There is only one URL, title or year, thus we only need to load in data using an 
 		IEnumerable<string>. However, there may exist one or more authors. Thus, we need to
 		use an IEnumerable<IEnumerable<string>>*/
@@ -32,7 +30,7 @@ public class XmlLoader {
                                                             select author.Value));
         IEnumerable<string> conferences = from el in SimpleStreamAxis(fileName, parentXmlAttribute)
                                    select (string)el.Element(childrenXmlAttributes[1]);
-        IEnumerable<string> titles = from el in SimpleStreamAxis(fileName, parentXmlAttribute)
+		IEnumerable<string> titles = from el in SimpleStreamAxis(fileName, parentXmlAttribute)
                                      select (string)el.Element(childrenXmlAttributes[2]);
         IEnumerable<string> years = from el in SimpleStreamAxis(fileName, parentXmlAttribute)
                                     select (string)el.Element(childrenXmlAttributes[3]);
@@ -40,7 +38,69 @@ public class XmlLoader {
 		XmlFileTrace.SetListsFromEnumerables(authors, conferences, titles, years);
     }
 
-    private IEnumerable<XElement> SimpleStreamAxis(string fileName, string elementName)
+	public void ReadURL(string type, string url, string parentXmlAttribute, string[] childrenXmlAttributes) {
+
+		if (type == "Movie") {
+			ReadMovieURL (url, parentXmlAttribute, childrenXmlAttributes);
+		} 
+	}
+
+	public static void ReadMovieData(string movieURL) {
+		XmlDocument urlDoc = new XmlDocument();
+		urlDoc.Load(movieURL);
+
+		XmlElement root = urlDoc.DocumentElement;
+		XmlNodeList nodes = root.SelectNodes("movie");
+
+		foreach (XmlNode node in nodes)
+		{
+			if (node.InnerText == "Movie not found!")
+			{
+				return;
+			}
+
+			XmlAttributeCollection attributes = node.Attributes;
+			foreach (XmlAttribute at in attributes) {
+				if (at.LocalName == "imdbRating") {
+					Debug.Log ("Movie: " + movieURL + ", Rating: " + at.Value);
+				} else if (at.LocalName == "awards") {
+					Debug.Log ("Awards: " + at.Value);
+				}
+			}
+		}
+	}
+
+	private void ReadMovieURL (string movieURL, string parentXmlAttribute, string[] childrenXmlAttributes) {
+		XmlDocument urlDoc = new XmlDocument();
+		urlDoc.Load(movieURL);
+
+		XmlElement root = urlDoc.DocumentElement;
+		XmlNodeList nodes = root.SelectNodes("result");
+
+		foreach (XmlNode node in nodes)
+		{
+			XmlAttributeCollection attributes = node.Attributes;
+			foreach (XmlAttribute at in attributes) {
+				if (at.LocalName == "title") {
+					moveTitles.Add (at.Value);
+				} else if (at.LocalName == "year") {
+					int resAttempt;
+					if (int.TryParse (at.Value, out resAttempt)) {
+						movieYears.Add (resAttempt);
+					} else {
+						/*This only happens when the type of the node is a series, not a movie.*/
+						Debug.Log (at.Value);
+						movieYears.Add (int.Parse(at.Value.Substring(0, 4)));
+					}
+				}
+			}
+		}
+
+		XmlFileTrace.SetLists (moveTitles, movieYears);
+	}
+
+	//TODO: Make simplestreamaxis not have to necessarily depend on a DTD schema file.
+	private IEnumerable<XElement> SimpleStreamAxis(string fileName, string elementName)
     {
         XmlReaderSettings settings = new XmlReaderSettings();
         settings.ValidationType = ValidationType.DTD;
@@ -78,21 +138,27 @@ public class XmlLoader {
 
     internal bool DidntReachEmptyPage(string movieURLWithPageIndex)
     {
-        XmlDocument urlDoc = new XmlDocument();
-        urlDoc.Load(movieURLWithPageIndex);
+		try {
+	        XmlDocument urlDoc = new XmlDocument();
+	        urlDoc.Load(movieURLWithPageIndex);
 
-        XmlElement root = urlDoc.DocumentElement;
-        XmlNodeList nodes = root.SelectNodes("error");
+	        XmlElement root = urlDoc.DocumentElement;
+	        XmlNodeList nodes = root.SelectNodes("error");
 
-        foreach (XmlNode node in nodes)
-        {
-            string errorMessage = node.InnerText;
-            if (errorMessage == "Movie not found!")
-            {
-                return false;
-            }
-        }
+	        foreach (XmlNode node in nodes)
+	        {
+	            string errorMessage = node.InnerText;
+	            if (errorMessage == "Movie not found!")
+	            {
+					
+	                return false;
+	            }
+	        }
 
-        return true;
+	        return true;
+		} catch (XmlException xe) {
+			return true;
+		}
     }
+
 }

@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using HandControlllerInputs;
+using UnityEngine.EventSystems;
+using System;
+using Valve.VR;
 
 public struct ObjectInteractEventArgs
 {
@@ -22,13 +25,10 @@ public struct PointerEventArgs
 
 public delegate void PointerEventHandler(object sender, PointerEventArgs e);
 
-public class SteamVR_LaserPointer : MonoBehaviour
+public class ControllerLaserPointer : IUILaserPointer
 {
     public bool active = true;
-    public Color color;
     public float thickness = 0.002f;
-    public GameObject holder;
-    public GameObject pointer;
     bool isActive = false;
     public bool addRigidBody = false;
     public Transform reference;
@@ -39,8 +39,13 @@ public class SteamVR_LaserPointer : MonoBehaviour
 
     Transform previousContact = null;
 
+    //Mesh Stuff for the Laser Pointer itself
+    private GameObject holder;
+    private GameObject pointer;
+
     private GameObject touchedObject = null;
-    private SteamVR_TrackedObject trackedController;
+    private SteamVR_TrackedObject trackedObject;
+    private SteamVR_TrackedController trackedController;
     //These Vectors will be constant scales that will be used throughout this whole class.
     private Vector3 thinLPScale;
     private Vector3 thickLPScale;
@@ -66,7 +71,7 @@ public class SteamVR_LaserPointer : MonoBehaviour
     public ObjectInteractEventArgs SetControllerInteractEvent(GameObject target)
     {
         ObjectInteractEventArgs e;
-        e.controllerIndex = (uint)trackedController.index;
+        e.controllerIndex = (uint)trackedObject.index;
         e.target = target;
         return e;
     }
@@ -84,8 +89,8 @@ public class SteamVR_LaserPointer : MonoBehaviour
     public PointerEventArgs SetPointerInteractEvent(GameObject target, float distance, uint flags)
     {
         PointerEventArgs pe;
-        pe.controller = SteamVR_Controller.Input((int)trackedController.index); ;
-        pe.controllerIndex = (uint)trackedController.index;
+        pe.controller = SteamVR_Controller.Input((int)trackedObject.index); ;
+        pe.controllerIndex = (uint)trackedObject.index;
         pe.target = target.transform;
         pe.distance = distance;
         pe.flags = flags;
@@ -94,13 +99,15 @@ public class SteamVR_LaserPointer : MonoBehaviour
 
     void Awake()
     {
-        trackedController = GetComponent<SteamVR_TrackedObject>();
+        trackedObject = GetComponent<SteamVR_TrackedObject>();
         thinLPScale = new Vector3(thickness, thickness, 0f);
         thickLPScale = new Vector3(thickness * 5f, thickness * 5f, 0f);
     }
 
-    protected virtual void Start()
+    protected override void Start()
     {
+        base.Start();
+
         //Set up the origin of the laser pointer
         holder = new GameObject("Laser Pointer");
         holder.transform.position = Vector3.zero;
@@ -116,6 +123,22 @@ public class SteamVR_LaserPointer : MonoBehaviour
         pointer.transform.parent = holder.transform;
         pointer.transform.localScale = Vector3.zero;
         pointer.transform.localPosition = new Vector3(0f, 0f, -50f);
+
+        hitPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        hitPoint.transform.parent = holder.transform;
+        hitPoint.transform.localScale = new Vector3(laserHitScale, laserHitScale, laserHitScale);
+        hitPoint.transform.localPosition = new Vector3(0.0f, 0.0f, -100.0f);
+
+        hitPoint.SetActive(false);
+
+        Material newMaterial = new Material(Shader.Find("Wacki/LaserPointer"));
+
+        newMaterial.SetColor("_Color", color);
+        pointer.GetComponent<MeshRenderer>().material = newMaterial;
+        hitPoint.GetComponent<MeshRenderer>().material = newMaterial;
+
+        DestroyImmediate(hitPoint.GetComponent<SphereCollider>());
+
         BoxCollider collider = pointer.GetComponent<BoxCollider>();
         if (addRigidBody)
         {
@@ -130,16 +153,14 @@ public class SteamVR_LaserPointer : MonoBehaviour
         {
             if (collider)
             {
-                Object.Destroy(collider);
+                Destroy(collider);
             }
         }
-        Material newMaterial = new Material(Shader.Find("Unlit/Color"));
-        newMaterial.SetColor("_Color", color);
-        pointer.GetComponent<MeshRenderer>().material = newMaterial;
         categorySpline = GameObject.FindGameObjectWithTag("Menu").GetComponent<SplineDecorator>();
 
         ControllerManager.TriggerPressed += new ControllerInteractionEventHandler(ChangePointerThicker);
         ControllerManager.TriggerReleased += new ControllerInteractionEventHandler(ChangePointerThinner);
+
     }
 
     public virtual void OnPointerIn(PointerEventArgs e)
@@ -156,8 +177,10 @@ public class SteamVR_LaserPointer : MonoBehaviour
 
 
     // Update is called once per frame
-    protected virtual void Update()
+    protected override void Update()
     {
+        base.Update();
+
         if (!isActive)
         {
             isActive = true;
@@ -166,19 +189,20 @@ public class SteamVR_LaserPointer : MonoBehaviour
 
         dist = 100f;
 
-        SteamVR_TrackedController controller = GetComponent<SteamVR_TrackedController>();
+        trackedController = GetComponent<SteamVR_TrackedController>();
 
         Ray raycast = new Ray(transform.position, transform.forward);
+
         RaycastHit hit;
         bool bHit = Physics.Raycast(raycast, out hit);
 
         if (previousContact && previousContact != hit.transform)
         {
             PointerEventArgs args = new PointerEventArgs();
-            if (controller != null)
+            if (trackedController != null)
             {
-                args.controller = SteamVR_Controller.Input((int)controller.controllerIndex);
-                args.controllerIndex = controller.controllerIndex;
+                args.controller = SteamVR_Controller.Input((int)trackedController.controllerIndex);
+                args.controllerIndex = trackedController.controllerIndex;
             }
             args.distance = 0f;
             args.flags = 0;
@@ -195,14 +219,14 @@ public class SteamVR_LaserPointer : MonoBehaviour
             {
                 if (ControllerManager.leftController != null && ControllerManager.leftController.name == "Controller (left)")
                 {
-                    GameObject.Find("Controller (left)").GetComponent<SteamVR_LaserPointer>().enabled = true;
-                    GameObject.Find("Controller (left)").GetComponent<SteamVR_LaserPointer>().pointer.GetComponent<MeshRenderer>().material.color = Color.white;
+                    GameObject.Find("Controller (left)").GetComponent<ControllerLaserPointer>().enabled = true;
+                    GameObject.Find("Controller (left)").GetComponent<ControllerLaserPointer>().pointer.GetComponent<MeshRenderer>().material.color = Color.white;
                 }
 
                 if (ControllerManager.rightController != null && ControllerManager.rightController.name == "Controller (right)")
                 {
-                    GameObject.Find("Controller (right)").GetComponent<SteamVR_LaserPointer>().enabled = true;
-                    GameObject.Find("Controller (right)").GetComponent<SteamVR_LaserPointer>().pointer.GetComponent<MeshRenderer>().material.color = Color.white;
+                    GameObject.Find("Controller (right)").GetComponent<ControllerLaserPointer>().enabled = true;
+                    GameObject.Find("Controller (right)").GetComponent<ControllerLaserPointer>().pointer.GetComponent<MeshRenderer>().material.color = Color.white;
                 }
 
                 moving = false;
@@ -218,10 +242,10 @@ public class SteamVR_LaserPointer : MonoBehaviour
             hit.collider.GetComponent<SplineDecorator>().expanded)
         {
             PointerEventArgs argsIn = new PointerEventArgs();
-            if (controller != null)
+            if (trackedController != null)
             {
-                argsIn.controller = SteamVR_Controller.Input((int)controller.controllerIndex);
-                argsIn.controllerIndex = controller.controllerIndex;
+                argsIn.controller = SteamVR_Controller.Input((int)trackedController.controllerIndex);
+                argsIn.controllerIndex = trackedController.controllerIndex;
             }
 
             argsIn.distance = hit.distance;
@@ -240,15 +264,15 @@ public class SteamVR_LaserPointer : MonoBehaviour
             if (touchedObject == null && IsObjectInteractable(hit.collider.gameObject))
             {
                 //Disable the other controller, non-used controller in order to prevent weird things from happen
-                if (controller.gameObject.name == "Controller (left)" && GameObject.Find("Controller (right)") != null)
+                if (trackedController.gameObject.name == "Controller (left)" && GameObject.Find("Controller (right)") != null)
                 {
-                    GameObject.Find("Controller (right)").GetComponent<SteamVR_LaserPointer>().enabled = false;
-                    GameObject.Find("Controller (right)").GetComponent<SteamVR_LaserPointer>().pointer.transform.localScale = Vector3.zero;
+                    GameObject.Find("Controller (right)").GetComponent<ControllerLaserPointer>().enabled = false;
+                    GameObject.Find("Controller (right)").GetComponent<ControllerLaserPointer>().pointer.transform.localScale = Vector3.zero;
                 }
-                else if (controller.gameObject.name == "Controller (right)" && GameObject.Find("Controller (left)") != null)
+                else if (trackedController.gameObject.name == "Controller (right)" && GameObject.Find("Controller (left)") != null)
                 {
-                    GameObject.Find("Controller (left)").GetComponent<SteamVR_LaserPointer>().enabled = false;
-                    GameObject.Find("Controller (left)").GetComponent<SteamVR_LaserPointer>().pointer.transform.localScale = Vector3.zero;
+                    GameObject.Find("Controller (left)").GetComponent<ControllerLaserPointer>().enabled = false;
+                    GameObject.Find("Controller (left)").GetComponent<ControllerLaserPointer>().pointer.transform.localScale = Vector3.zero;
                 }
 
                 moving = true;
@@ -267,9 +291,17 @@ public class SteamVR_LaserPointer : MonoBehaviour
         if (bHit && hit.distance < 100f)
         {
             dist = hit.distance;
+            hitPoint.SetActive(true);
+            hitPoint.transform.localPosition = new Vector3(0.0f, 0.0f, dist);
+        }
+        else
+        {
+            hitPoint.SetActive(false);
         }
 
-        if (controller != null && (controller.triggerPressed || ViveControllerInput.Instance.guiSelected))
+
+
+        if (trackedObject != null && (trackedController.triggerPressed || LaserPointerInputModule.instance.guiSelected))
         {
             pointer.transform.localScale = TempVectorUpdated(thickLPScale);
             if (touchedObject != null && touchedObject.GetComponent<Rigidbody>() == null)
@@ -322,4 +354,33 @@ public class SteamVR_LaserPointer : MonoBehaviour
         return tempVectorForDist;
     }
 
+    public override bool GUIButtonDown()
+    {
+        base.Initialize();
+        
+        if (trackedController != null)
+        {
+            //Make sure to get the state of the controller at a button.
+            var device = SteamVR_Controller.Input((int)trackedController.controllerIndex);
+            if (device != null)
+                return device.GetPressDown(EVRButtonId.k_EButton_SteamVR_Trigger);
+        }
+
+        return false;
+    }
+
+    public override bool GUIButtonUp()
+    {
+        base.Initialize();
+
+        if (trackedController != null)
+        {
+            //Make sure to get the state of the controller at a button.
+            var device = SteamVR_Controller.Input((int)trackedController.controllerIndex);
+            if (device != null)
+                return device.GetPressUp(EVRButtonId.k_EButton_SteamVR_Trigger);
+        }
+
+        return false;
+    }
 }

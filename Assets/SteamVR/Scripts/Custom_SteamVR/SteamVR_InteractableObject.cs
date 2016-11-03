@@ -209,14 +209,14 @@ public class SteamVR_InteractableObject : MonoBehaviour
         //But, I think I fixed the error that was here, it was a null check
         if (grabAttatchMechanic == GrabAttatchType.Track_Object 
             && GetComponent<Rigidbody>() != null
-            && ((lc != null && lc.GetComponent<SteamVR_LaserPointer>().moving) || (rc != null && rc.GetComponent<SteamVR_LaserPointer>().moving))
+            && ((lc != null && lc.GetComponent<ControllerLaserPointer>().moving) || (rc != null && rc.GetComponent<ControllerLaserPointer>().moving))
             )
         {
 			rb = GetComponent<Rigidbody> ();
             FixedUpdateTrackedObject();
         } else if (grabAttatchMechanic == GrabAttatchType.Track_Object
             && GetComponent<Rigidbody2D>() != null
-            && ((lc != null && lc.GetComponent<SteamVR_LaserPointer>().moving) || (rc != null && rc.GetComponent<SteamVR_LaserPointer>().moving))
+            && ((lc != null && lc.GetComponent<ControllerLaserPointer>().moving) || (rc != null && rc.GetComponent<ControllerLaserPointer>().moving))
             ) {
                 rb2D = GetComponent<Rigidbody2D>();
                 FixedUpdateTrackedObject();

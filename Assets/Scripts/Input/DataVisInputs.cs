@@ -37,8 +37,9 @@ public class DataVisInputs : MonoBehaviour
     public GUIParameters guiParameters;
     public TransitionParameters transitionParameters;
     public float rotationSpeed = 500.0f;
-    public bool usingMouseControls = false;
-    public bool menuWanted = false;
+    public static bool usingMouseControls = false;
+    public bool controllerMenusWanted = false;
+	public string dataType = "DBLP";
 
     //Private Variables
     private static GameObject colliderGameObject;
@@ -145,7 +146,7 @@ public class DataVisInputs : MonoBehaviour
             {
                 vrHeadset.SetActive(false);
                 Destroy(GameObject.Find("[SteamVR]").gameObject);
-                Destroy(GameObject.Find("Controller UI Camera"));
+                Destroy(GameObject.Find("UI Camera"));
                 Destroy(GameObject.Find("Cursor 0"));
                 Destroy(GameObject.Find("Cursor 1"));
             }
@@ -175,7 +176,7 @@ public class DataVisInputs : MonoBehaviour
 
     }
 
-    static void ClearConsole()
+    public static void ClearConsole()
     {
         // This simply does "LogEntries.Clear()" the long way:
         var logEntries = System.Type.GetType("UnityEditorInternal.LogEntries,UnityEditor.dll");
@@ -459,7 +460,7 @@ public class DataVisInputs : MonoBehaviour
 
     void DoSpawnControllerMenuGUIs()
     {
-        if (menuWanted && !transitionedInvis)
+        if (controllerMenusWanted && !transitionedInvis)
         {
             Color originalColor = hexToColor(HEX_STRING_WITH_ALPHA);
 
@@ -470,9 +471,7 @@ public class DataVisInputs : MonoBehaviour
             gameObject.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_TintColor", originalColor);
 
             transitionedInvis = true;
-        } else if (!menuWanted)
-        {
-            //TODO: Not duplicate almost same code twice... Just lazy for now :)
+        } else if (!controllerMenusWanted) {
             GameObject menuHolderLeft = GameObject.Find("Controller (left)").transform.Find("Button Key").gameObject;
 
             MeshRenderer[] textInformationL = menuHolderLeft.GetComponentsInChildren<MeshRenderer>();
@@ -508,7 +507,7 @@ public class DataVisInputs : MonoBehaviour
     {
         ResetRotators();
         ResetGridImage();
-        DataProcessor.ReadAndProcessData(dataReadParameters.sizeOfClusterRead);
+        DataProcessor.ReadAndProcessData(dataReadParameters.sizeOfClusterRead, dataType);
         ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().AddInData(DataProcessor.GetAllMasterNodes());
         DataProcessor.ClearTempCluster();
 
@@ -533,9 +532,6 @@ public class DataVisInputs : MonoBehaviour
             }
 
             ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().CallAlgorithm();
-            //What I can do is access the positions of the line renderer component on of the sphere and just update those positions with the current GO positions on the sphere.
-            //This way, we don't have to call the algorithm every time, which may take more time then needed
-
         }
     }
 
@@ -543,7 +539,7 @@ public class DataVisInputs : MonoBehaviour
     {
         ResetRotators();
         ResetGridImage();
-        DataProcessor.ReadAndProcessData(dataReadParameters.sizeOfClusterRead);
+		DataProcessor.ReadAndProcessData(dataReadParameters.sizeOfClusterRead, dataType);
         ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().AddInData(DataProcessor.GetAllMasterNodes());
         DataProcessor.ClearTempCluster();
 
@@ -568,9 +564,6 @@ public class DataVisInputs : MonoBehaviour
             }
 
             ControllerManager.refToMainSplineGO.GetComponent<SplineDecorator>().CallAlgorithm();
-            //What I can do is access the positions of the line renderer component on of the sphere and just update those positions with the current GO positions on the sphere.
-            //This way, we don't have to call the algorithm every time, which may take more time then needed
-
         }
     }
 
@@ -672,7 +665,7 @@ public class DataVisInputs : MonoBehaviour
         //Also, when a user is on the GUI, the sphere cannot be manipulated.
         if (ControllerManager.left_controller != null && ControllerManager.right_controller != null)
         {
-            if (e.controllerIndex == ControllerManager.right_controller.index && ViveControllerInput.Instance.guiSelected)
+            if (e.controllerIndex == ControllerManager.right_controller.index && LaserPointerInputModule.instance.guiSelected)
             {
                 RectTransform guiRectTransform = guiParameters.gridImage.GetComponent<RectTransform>();
                 Vector3 tempRectTransform = (guiRectTransform.anchoredPosition3D);
@@ -693,8 +686,8 @@ public class DataVisInputs : MonoBehaviour
                 }
                 guiRectTransform.anchoredPosition3D = tempRectTransform;
             }
-            else if (e.controllerIndex == ControllerManager.left_controller.index && !ControllerManager.leftController.GetComponent<SteamVR_LaserPointer>().moving &&
-              !ControllerManager.rightController.GetComponent<SteamVR_LaserPointer>().moving)
+            else if (e.controllerIndex == ControllerManager.left_controller.index && !ControllerManager.leftController.GetComponent<ControllerLaserPointer>().moving &&
+              !ControllerManager.rightController.GetComponent<ControllerLaserPointer>().moving)
             {
                 dataReadParameters.rotators = ControllerManager.refToMainSplineGO.GetComponentsInChildren<SplineDecorator>();
                 if (e.touchpadAxis.normalized.y != 0)
