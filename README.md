@@ -1,11 +1,11 @@
 # VR-Data-Visualization-Research-Grant-Project
+NOTE: This project uses a very old version of Unity and older headsets - Unity 5.X
+
 A Virtual Reality data visualization research grant project.
 
 How to use this visualization: 
 
-IMPORTANT - The first thing to do is download the DBLP dataset from here: https://www.dropbox.com/sh/qyf90qe3yxon2xi/AAAQzeRPpmJ-1lxhUFWavH8ba?dl=0.
-WARNING, this file is pretty large (about 1 GB of space) and I couldn't
-include it as part of the Github repository, so it will have to be like this for now.
+This project is compatible with XML data so download a dataset from DBLP and this should be able to parse it.
 
 However, if you push a change with the XML file, the gitignore file will make sure that
 the XML file won't be pushed with the rest of the changes. 
